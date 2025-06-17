@@ -18,6 +18,7 @@ if [ "$JUPYTER" == "on" ]; then
         --NotebookApp.password='' \
         --NotebookApp.disable_check_xsrf=True \
         --NotebookApp.notebook_dir='/workspace' \
+        --ServerApp.allow_origin='*' \
         > /workspace/jupyter.log 2>&1 &
 else
     echo "⏹️ JupyterLab ist deaktiviert."
