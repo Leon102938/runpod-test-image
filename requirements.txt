@@ -1,1 +1,8 @@
+fastapi
+uvicorn
 jupyterlab
+n8n
+pillow
+torch
+diffusers
+transformers
