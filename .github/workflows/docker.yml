@@ -23,10 +23,13 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker image
+    - name: Build and push Docker image (with cache)
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
         tags: ghcr.io/leon102938/runpod-test-image:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
 
