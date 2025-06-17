@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Setze die Shell für alle Prozesse
+export SHELL=/bin/bash
+
 # Lade Konfig-Datei mit Ein-/Aus-Schaltern
 source /workspace/tools.config
 
@@ -14,6 +17,7 @@ if [ "$JUPYTER" == "on" ]; then
         --NotebookApp.token='' \
         --NotebookApp.password='' \
         --NotebookApp.disable_check_xsrf=True \
+        --NotebookApp.notebook_dir='/workspace' \
         > /workspace/jupyter.log 2>&1 &
 else
     echo "⏹️ JupyterLab ist deaktiviert."
@@ -27,10 +31,10 @@ else
     echo "⏹️ N8N ist deaktiviert."
 fi
 
-# txt2img FastAPI immer starten (oder auch optional machen)
+# txt2img FastAPI starten
 if [ "$TXT2IMG" == "on" ]; then
     echo "✅ Starte txt2img FastAPI..."
-    nohup uvicorn main:app --host 0.0.0.0 --port=8000 > /workspace/txt2img.log 2>&1 &
+    nohup uvicorn app.main:app --host 0.0.0.0 --port=8000 > /workspace/txt2img.log 2>&1 &
 else
     echo "⏹️ txt2img FastAPI ist deaktiviert."
 fi
