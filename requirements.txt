@@ -3,6 +3,12 @@ uvicorn
 jupyterlab
 n8n
 pillow
+pydantic
+numpy
+scipy
+# ggf. für Text2Voice:
+elevenlabs
+# ggf. für Musik / Bild-Modelle:
 torch
 diffusers
 transformers

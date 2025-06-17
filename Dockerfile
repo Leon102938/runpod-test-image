@@ -8,27 +8,26 @@ RUN apt update && apt install -y \
     && npm install -g n8n \
     && rm -rf /var/lib/apt/lists/*
 
-# 🌍 N8N Umgebungsvariablen
+# 🌍 Umgebungsvariablen
 ENV N8N_PORT=7860
 ENV GENERIC_TIMEZONE=Europe/Berlin
 ENV N8N_BASIC_AUTH_ACTIVE=false
-
-# 🔑 Jupyter ohne Token starten
 ENV JUPYTER_TOKEN=""
 ENV JUPYTER_ENABLE_LAB=yes
 
 WORKDIR /workspace
 
-# 📦 Python Requirements
-COPY requirements.txt ./
+# 📦 Projekt reinziehen
+COPY . /workspace
+
+# 📦 Python Requirements installieren
 RUN pip3 install --no-cache-dir -r requirements.txt || true
 
+# 🧠 Startskript ausführbar machen
+RUN chmod +x /workspace/start.sh
 
-# 🧠 Startskript
-COPY . /workspace
-RUN chmod +x start.sh
-
-CMD ["./start.sh"]
+# 🚀 Start des Containers
+CMD ["/workspace/start.sh"]
 
 
 
