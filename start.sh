@@ -6,7 +6,8 @@ source /workspace/tools.config
 # Jupyter starten
 if [ "$JUPYTER" == "on" ]; then
     echo "✅ Starte JupyterLab..."
-    nohup jupyter lab --ip=0.0.0.0 --port=8888 --no-browser > /workspace/jupyter.log 2>&1 &
+    nohup jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root > /workspace/jupyter.log 2>&1 &
+
 else
     echo "⏹️ JupyterLab ist deaktiviert."
 fi
