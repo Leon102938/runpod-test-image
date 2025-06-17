@@ -26,6 +26,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt || true
 
 # 🧠 Startskript
 COPY start.sh ./start.sh
+COPY tools.config /workspace/tools.config
+
 RUN chmod +x start.sh
 
 CMD ["./start.sh"]
