@@ -1,3 +1,39 @@
+# Bytecode
 __pycache__/
-*.pyc
-*.ipynb_checkpoints
+*.py[cod]
+*.so
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Logs
+*.log
+
+# Umgebungen & Tools
+.env
+.venv/
+env/
+venv/
+
+# System-Dateien
+.DS_Store
+Thumbs.db
+
+# RunPod / temporäres Zeug
+/workspace/tmp/
+workspace/tmp/
+*.pid
+
+# Models & große Files (wenn du willst)
+models/
+checkpoints/
+weights/
+*.safetensors
+
+# VSCode & IDEs
+.vscode/
+.idea/
+
+# Git
+.gitkeep

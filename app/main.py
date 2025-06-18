@@ -1,59 +1,53 @@
-# app/main.py
-from fastapi import FastAPI, HTTPException
+# 🚀 FASTAPI SERVER – SORTIERT NACH MODELLGRUPPEN
+
+from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi.responses import FileResponse
-import uuid, os
 
-# 🔁 Importiere alle Tools
-import text2img
-import img2video
-import text2music
-import text2voice
+# 📸 Bild/Video Tools
+from tools.text2img import generate_image
+from tools.img2vid import generate_video
+from tools.text2vid import generate_text2vid
 
+# 🔊 Audio/Text Tools
+from tools.text2musik import generate_music
+from tools.text2voice import generate_voice
+from tools.text2fsx import generate_fsx
+
+# 🌐 Starte FastAPI
 app = FastAPI()
 
-# 📥 Input-Schema
-class PromptInput(BaseModel):
+# 🧩 Gemeinsame Input-Datenstruktur für alle Tools
+class Input(BaseModel):
     prompt: str
+    style: str = "default"
 
-# ✅ Gesundheits-Check
-@app.get("/")
-def root():
-    return {"message": "KI Content API aktiv"}
+# 🖼️ TEXT-TO-IMAGE
+@app.post("/txt2img")
+def txt2img_route(data: Input):
+    return {"output": generate_image(data.prompt, data.style)}
 
-# 🖼️ Text zu Bild
-@app.post("/text2img")
-def handle_text2img(data: PromptInput):
-    try:
-        path = text2img.generate(data.prompt)
-        return FileResponse(path, media_type="image/png")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# 🎞️ IMAGE-TO-VIDEO
+@app.post("/img2vid")
+def img2vid_route(data: Input):
+    return {"output": generate_video(data.prompt, data.style)}
 
-# 🎞️ Bild zu Video
-@app.post("/img2video")
-def handle_img2video(data: PromptInput):
-    try:
-        path = img2video.generate(data.prompt)
-        return FileResponse(path, media_type="video/mp4")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# 📽️ TEXT-TO-VIDEO
+@app.post("/text2vid")
+def text2vid_route(data: Input):
+    return {"output": generate_text2vid(data.prompt, data.style)}
 
-# 🎵 Text zu Musik
-@app.post("/text2music")
-def handle_text2music(data: PromptInput):
-    try:
-        path = text2music.generate(data.prompt)
-        return FileResponse(path, media_type="audio/mpeg")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# 🎵 TEXT-TO-MUSIC
+@app.post("/text2musik")
+def text2musik_route(data: Input):
+    return {"output": generate_music(data.prompt, data.style)}
 
-# 🔊 Text zu Stimme
+# 🗣️ TEXT-TO-VOICE
 @app.post("/text2voice")
-def handle_text2voice(data: PromptInput):
-    try:
-        path = text2voice.generate(data.prompt)
-        return FileResponse(path, media_type="audio/mpeg")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def text2voice_route(data: Input):
+    return {"output": generate_voice(data.prompt, data.style)}
+
+# 🧠 TEXT-TO-FSX (frei definierbar)
+@app.post("/text2fsx")
+def text2fsx_route(data: Input):
+    return {"output": generate_fsx(data.prompt, data.style)}
 

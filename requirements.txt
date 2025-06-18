@@ -1,16 +1,18 @@
+# ───── FastAPI & Core ─────
 fastapi
 uvicorn
-jupyterlab
-n8n
-pillow
 pydantic
-numpy
-scipy
-# ggf. für Text2Voice:
-elevenlabs
-# ggf. für Musik / Bild-Modelle:
-torch
-diffusers
-transformers
-moviepy
-pyttsx3
+
+# ───── Jupyter für Tests ─────
+jupyterlab
+
+# ───── Bild-/Video-Modelle ─────
+torch==2.2.0
+diffusers==0.25.0
+transformers==4.38.0
+pillow
+
+# ───── Audio/Voice (wenn geplant) ─────
+scipy               # für Musikgen & Audio
+librosa             # für Audiobearbeitung
+soundfile           # für Audio-Output
