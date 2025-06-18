@@ -4,14 +4,14 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 # 📸 Bild/Video Tools
-from tools.text2img import generate_image
-from tools.img2vid import generate_video
-from tools.text2vid import generate_text2vid
+from text2img import generate_image
+from img2vid import generate_video_from_image
+from text2vid import generate_video_from_text
 
 # 🔊 Audio/Text Tools
-from tools.text2musik import generate_music
-from tools.text2voice import generate_voice
-from tools.text2fsx import generate_fsx
+from text2musik import generate_music
+from text2voice import generate_voice
+from text2fsx import generate_effects
 
 # 🌐 Starte FastAPI
 app = FastAPI()
