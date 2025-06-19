@@ -19,7 +19,8 @@ nohup jupyter lab \
 
 # ─────────────── FASTAPI ───────────────
 echo "🎨 Starte zentrale FastAPI (Port 8000)..."
-nohup uvicorn app.main:app --host 0.0.0.0 --port=8000 > /workspace/fastapi.log 2>&1 &
+cd /workspace/app
+nohup uvicorn main:app --host 0.0.0.0 --port=8000 > /workspace/fastapi.log 2>&1 &
 
 # ─────────────── ABSCHLUSS ───────────────
 echo "✅ Dienste wurden gestartet: JupyterLab + FastAPI"
