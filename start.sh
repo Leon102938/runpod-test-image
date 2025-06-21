@@ -1,32 +1,22 @@
 #!/bin/bash
 
-export SHELL=/bin/bash
-echo "🚀 Starte Setup-Prozess..."
+# Tools-Konfiguration laden
+source ./tools.config
 
-# ─────────────── JUPYTER ───────────────
-echo "✅ Starte JupyterLab (Port 8888)..."
-nohup jupyter lab \
-    --ip=0.0.0.0 \
-    --port=8888 \
-    --no-browser \
-    --allow-root \
-    --NotebookApp.token='' \
-    --NotebookApp.password='' \
-    --NotebookApp.disable_check_xsrf=True \
-    --NotebookApp.notebook_dir='/workspace' \
-    --ServerApp.allow_origin='*' \
-    > /workspace/jupyter.log 2>&1 &
+# Mount-Volume starten
+bash ./mount_server_volume.sh
 
-# ─────────────── FASTAPI ───────────────
-echo "🎨 Starte zentrale FastAPI (Port 8000)..."
-cd /workspace/app
-nohup uvicorn main:app --host 0.0.0.0 --port=8000 > /workspace/fastapi.log 2>&1 &
+# Jupyter starten (wenn aktiviert)
+if [ "$JUPYTER" == "on" ]; then
+  echo "[START] Starte Jupyter..."
+  jupyter lab --notebook-dir=/workspace --allow-root --ip=0.0.0.0 --port=8888 --no-browser &
+fi
 
-# ─────────────── ABSCHLUSS ───────────────
-echo "✅ Dienste wurden gestartet: JupyterLab + FastAPI"
+# FastAPI starten (wenn aktiviert)
+if [ "$FASTAPI" == "on" ]; then
+  echo "[START] Starte FastAPI..."
+  uvicorn app.main:app --host 0.0.0.0 --port 7860 &
+fi
+
+# Container am Leben halten
 tail -f /dev/null
-
-
-
-
-
