@@ -11,6 +11,7 @@ numpy==1.26.4
 torch==2.2.0
 diffusers==0.25.0
 transformers==4.38.0
+huggingface_hub>=0.20.3
 pillow
 
 # ───── Audio/Voice (wenn geplant) ─────
