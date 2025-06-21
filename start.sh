@@ -9,6 +9,9 @@ export PYTHONPATH="$PYTHONPATH:/workspace/app"
 # Mount-Volume starten
 bash ./mount_server_volume.sh
 
+mkdir -p /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension
+echo '{ "theme": "JupyterLab Dark" }' > /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension/themes.jupyterlab-settings
+
 # ============ 🔷 JUPYTERLAB (Port 8888) ============
 if [ "$JUPYTER" == "on" ]; then
   echo "🧠 Starte JupyterLab (Port 8888)..."
@@ -28,9 +31,10 @@ fi
 # ============ 🧩 FASTAPI (Port 7860) ============
 if [ "$FASTAPI" == "on" ]; then
   echo "🚀 Starte zentrale FastAPI (Port 7860)..."
-  nohup uvicorn app.main:app --host 0.0.0.0 --port 7860 > /workspace/fastapi.log 2>&1 &
+  nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > /workspace/fastapi.log 2>&1 &
 fi
 
 # ============ ✅ ABSCHLUSS ============
 echo "✅ Dienste wurden gestartet: JupyterLab und/oder FastAPI (je nach config)"
 tail -f /dev/null
+
