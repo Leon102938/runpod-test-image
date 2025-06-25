@@ -1,6 +1,7 @@
 # 🚀 FASTAPI SERVER – SORTIERT NACH MODELLGRUPPEN
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from txt2img import generate_image_from_json
 from pydantic import BaseModel
 
 # 📸 Bild/Video Tools – direkte Imports aus dem gleichen Verzeichnis
@@ -23,8 +24,10 @@ class Input(BaseModel):
 
 # 🖼️ TEXT-TO-IMAGE
 @app.post("/txt2img")
-def txt2img_route(data: Input):
-    return {"output": generate_image(data.prompt, data.style)}
+async def txt2img_route(request: Request):
+    data = await request.json()
+    image_path = generate_image_from_json(data)
+    return {"output": image_path}
 
 # 🎞️ IMAGE-TO-VIDEO
 @app.post("/img2vid")
