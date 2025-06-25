@@ -1,11 +1,12 @@
 # 🚀 FASTAPI SERVER – SORTIERT NACH MODELLGRUPPEN
 
+# 📦 FASTAPI: Hauptserver für alle KI-Tools
+
 from fastapi import FastAPI, Request
-from txt2img import generate_image_from_json
 from pydantic import BaseModel
 
 # 📸 Bild/Video Tools – direkte Imports aus dem gleichen Verzeichnis
-from text2img import generate_image
+from text2img import generate_image_from_json
 from img2vid import generate_video
 from text2vid import generate_video_from_text
 
