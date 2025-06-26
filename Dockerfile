@@ -10,6 +10,7 @@ WORKDIR /workspace
 
 # Alles kopieren
 COPY . .
+COPY config/rclone.conf /workspace/config/rclone.conf 
 
 # Rechte setzen
 RUN chmod +x start.sh mount_server_volume.sh
