@@ -14,7 +14,7 @@ COPY . .
 COPY config/rclone.conf /workspace/config/rclone.conf 
 
 # Rechte setzen
-RUN chmod +x start.sh mount_server_volume.sh
+
 
 # Python-Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
