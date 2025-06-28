@@ -6,18 +6,7 @@ source ./tools.config
 # Pythonpath setzen (damit FastAPI die Module findet)
 export PYTHONPATH="$PYTHONPATH:/workspace/app"
 
-# ============ 🔷 RCLONE WEBDAV MOUNT ============
-echo "📂 Starte rclone WebDAV Mount..."
-# Ersetze den Pfad zur config falls nötig
-rclone mount server-volume: /mnt/server-volume \
-  --config ~/.config/rclone/rclone.conf \
-  --allow-other \
-  --allow-non-empty \
-  --vfs-cache-mode full &
-echo "📂 rclone WebDAV Mount läuft im Hintergrund"
 
-# ============ 🔷 MOUNT VOLUME STARTEN ============
-bash ./mount_server_volume.sh
 
 # ============ 🔷 JUPYTERLAB THEME ============
 mkdir -p /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension
