@@ -3,26 +3,22 @@
 # Tools-Konfiguration laden
 source ./tools.config
 
+# ============ 🔹 MODELLE LADEN ============
+echo "📦 Starte Modellauswahl aus filelist.txt ..."
+mkdir -p /workspace/ai-core/models/txt2img
+
+# CRLF (Windows-Zeilenumbrüche) fixen
+sed -i 's/\r$//' /workspace/filelist.txt
+
+# Modelle parallel laden
+echo "⏳ Lade Modelle (parallel, max 8 gleichzeitig)..."
+cat /workspace/filelist.txt | xargs -n 1 -P 8 wget --show-progress -P /workspace/ai-core/models/txt2img
+
+echo "✅ Modelle erfolgreich geladen!"
+
 # Pythonpath setzen (damit FastAPI die Module findet)
 export PYTHONPATH="$PYTHONPATH:/workspace/app"
 
-# ============ 🔽 MODELLE LADEN (Cloudflare Proxy via rclone) ============
-echo "📦 Lade AI-Core Inhalte aus Cloudflare Proxy..."
-
-mkdir -p /workspace/ai-core
-
-rclone copy \
-  --transfers=64 \
-  --checkers=32 \
-  --b2-chunk-size=200M \
-  --no-traverse \
-  --progress \
-  --create-empty-src-dirs \
-  --header "User-Agent: Mozilla" \
-  "https://b2-proxy.leonseiffe.workers.dev/ai-core" \
-  /workspace/ai-core
-
-echo "✅ AI-Core erfolgreich synchronisiert."
 
 # ============ 🔷 JUPYTERLAB THEME ============
 mkdir -p /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension
@@ -53,4 +49,3 @@ fi
 # ============ ✅ ABSCHLUSS ============
 echo "✅ Dienste wurden gestartet: Modelle geladen, JupyterLab und/oder FastAPI aktiv (je nach config)"
 tail -f /dev/null
-

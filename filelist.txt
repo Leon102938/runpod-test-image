@@ -1,0 +1,8 @@
+https://b2-proxy.leonseiffe.workers.dev/ai-core/models/txt2img/absolutereality_v1.8.safetensors
+https://b2-proxy.leonseiffe.workers.dev/ai-core/models/txt2img/deliberate_xl.safetensors
+https://b2-proxy.leonseiffe.workers.dev/ai-core/models/txt2img/dreamshaper_8.safetensors
+https://b2-proxy.leonseiffe.workers.dev/ai-core/models/txt2img/epicrealism_v6.5.safetensors
+https://b2-proxy.leonseiffe.workers.dev/ai-core/models/txt2img/ghostmix_v2.safetensors
+https://b2-proxy.leonseiffe.workers.dev/ai-core/models/txt2img/photon_v2.safetensors
+https://b2-proxy.leonseiffe.workers.dev/ai-core/models/txt2img/realvisxl_v5.safetensors
+https://b2-proxy.leonseiffe.workers.dev/ai-core/models/txt2img/toonyou_v4.safetensors

@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 # Tools installieren
 RUN apt-get update && apt-get install -y \
-    git curl unzip sudo tmux nano rclone fuse \
+    git curl unzip sudo tmux nano rclone fuse wget \
  && rm -rf /var/lib/apt/lists/*
 
 
