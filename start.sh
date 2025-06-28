@@ -6,7 +6,23 @@ source ./tools.config
 # Pythonpath setzen (damit FastAPI die Module findet)
 export PYTHONPATH="$PYTHONPATH:/workspace/app"
 
+# ============ 🔽 MODELLE LADEN (Cloudflare Proxy via rclone) ============
+echo "📦 Lade AI-Core Inhalte aus Cloudflare Proxy..."
 
+mkdir -p /workspace/ai-core
+
+rclone copy \
+  --transfers=64 \
+  --checkers=32 \
+  --b2-chunk-size=200M \
+  --no-traverse \
+  --progress \
+  --create-empty-src-dirs \
+  --header "User-Agent: Mozilla" \
+  "https://b2-proxy.leonseiffe.workers.dev/ai-core" \
+  /workspace/ai-core
+
+echo "✅ AI-Core erfolgreich synchronisiert."
 
 # ============ 🔷 JUPYTERLAB THEME ============
 mkdir -p /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension
@@ -35,6 +51,6 @@ if [ "$FASTAPI" == "on" ]; then
 fi
 
 # ============ ✅ ABSCHLUSS ============
-echo "✅ Dienste wurden gestartet: JupyterLab und/oder FastAPI (je nach config)"
+echo "✅ Dienste wurden gestartet: Modelle geladen, JupyterLab und/oder FastAPI aktiv (je nach config)"
 tail -f /dev/null
 
