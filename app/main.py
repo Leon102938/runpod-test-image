@@ -1,57 +1,45 @@
-# 🚀 FASTAPI SERVER – SORTIERT NACH MODELLGRUPPEN
+# 🚀 FASTAPI SERVER – NUR FÜR txt2img
 
-# 📦 FASTAPI: Hauptserver für alle KI-Tools
-
+# 📦 INSTALLATIONEN & IMPORTS
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
+from typing import Optional
+import uvicorn
 
-# 📸 Bild/Video Tools – direkte Imports aus dem gleichen Verzeichnis
-from text2img import generate_image_from_json
-from img2vid import generate_video
-from text2vid import generate_video_from_text
+# 📂 TOOL IMPORT – TXT2IMG ONLY
+from txt2img import generate_image_from_json
 
-# 🔊 Audio/Text Tools
-from text2musik import generate_music
-from text2voice import generate_voice
-from text2fsx import generate_fsx
-
-# 🌐 Starte FastAPI
+# 🌐 FASTAPI APP INITIALISIEREN
 app = FastAPI()
 
-# 🧩 Gemeinsame Input-Datenstruktur für alle Tools
-class Input(BaseModel):
+# 🧩 DATENSTRUKTUR – TXT2IMG INPUT MODELL
+class Txt2ImgRequest(BaseModel):
+    # 1_Standard
     prompt: str
-    style: str = "default"
+    negative_prompt: Optional[str] = ""
+    model: Optional[str] = "absolutereality"
 
-# 🖼️ TEXT-TO-IMAGE
+    # 4_Advanced_Settings
+    width: Optional[int] = 832
+    height: Optional[int] = 1242
+    steps: Optional[int] = 30
+    cfg: Optional[float] = 7.0
+    sampler: Optional[str] = "Euler"
+    seed: Optional[str] = None
+
+    # 5_Upscale
+    upscale: Optional[bool] = False
+
+    # Optional: Output path (kann automatisch generiert werden)
+    output_path: Optional[str] = None
+
+    # 2_LoRAs – Platzhalter für Erweiterungen
+    loras: Optional[list] = []
+
+    # 3_ControlNet – Platzhalter für Erweiterungen
+    controlnet: Optional[dict] = {}
+
+# 🧠 TOOL: TXT2IMG ENDPOINT
 @app.post("/txt2img")
-async def txt2img_route(request: Request):
-    data = await request.json()
-    image_path = generate_image_from_json(data)
-    return {"output": image_path}
-
-# 🎞️ IMAGE-TO-VIDEO
-@app.post("/img2vid")
-def img2vid_route(data: Input):
-    return {"output": generate_video(data.prompt, data.style)}
-
-# 📽️ TEXT-TO-VIDEO
-@app.post("/text2vid")
-def text2vid_route(data: Input):
-    return {"output": generate_video_from_text(data.prompt, data.style)}
-
-# 🎵 TEXT-TO-MUSIC
-@app.post("/text2musik")
-def text2musik_route(data: Input):
-    return {"output": generate_music(data.prompt, data.style)}
-
-# 🗣️ TEXT-TO-VOICE
-@app.post("/text2voice")
-def text2voice_route(data: Input):
-    return {"output": generate_voice(data.prompt, data.style)}
-
-# 🧠 TEXT-TO-FSX (z. B. Effekte)
-@app.post("/text2fsx")
-def text2fsx_route(data: Input):
-    return {"output": generate_fsx(data.prompt, data.style)}
-
+def txt2img_route(data: Txt2ImgRequest):
+    return generate_image_from_json(data.dict())
