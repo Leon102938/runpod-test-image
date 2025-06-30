@@ -6,40 +6,42 @@ from pydantic import BaseModel
 from typing import Optional
 import uvicorn
 
-# 📂 TOOL IMPORT – TXT2IMG ONLY
-from txt2img import generate_image_from_json
+# 🧠 TOOL IMPORT | TXT2IMG ONLY
+from text2img import generate_image_from_json
 
-# 🌐 FASTAPI APP INITIALISIEREN
+# 🚀 FASTAPI APP INITIALISIEREN
 app = FastAPI()
 
-# 🧩 DATENSTRUKTUR – TXT2IMG INPUT MODELL
+# 📄 DATENSTRUKTUR | TXT2IMG INPUT MODELL
 class Txt2ImgRequest(BaseModel):
-    # 1_Standard
+    # 1. Standard
     prompt: str
     negative_prompt: Optional[str] = ""
     model: Optional[str] = "absolutereality"
 
-    # 4_Advanced_Settings
+    # 2. Advanced Settings
     width: Optional[int] = 832
     height: Optional[int] = 1242
     steps: Optional[int] = 30
     cfg: Optional[float] = 7.0
     sampler: Optional[str] = "Euler"
-    seed: Optional[str] = None
+    seed: Optional[int] = None
 
-    # 5_Upscale
+    # 3. Upscale
     upscale: Optional[bool] = False
 
-    # Optional: Output path (kann automatisch generiert werden)
+    # 4. Output path (optional)
     output_path: Optional[str] = None
 
-    # 2_LoRAs – Platzhalter für Erweiterungen
+    # 5. LoRAs (Platzhalter)
     loras: Optional[list] = []
 
-    # 3_ControlNet – Platzhalter für Erweiterungen
+    # 6. ControlNet (Platzhalter)
     controlnet: Optional[dict] = {}
 
-# 🧠 TOOL: TXT2IMG ENDPOINT
+# 🔁 TOOL ENDPOINT | TXT2IMG
 @app.post("/txt2img")
-def txt2img_route(data: Txt2ImgRequest):
-    return generate_image_from_json(data.dict())
+async def txt2img_route(request: Request):
+    data = await request.json()
+    image_path = generate_image_from_json(data)
+    return {"output": image_path}
