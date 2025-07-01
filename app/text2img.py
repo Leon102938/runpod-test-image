@@ -3,31 +3,8 @@ import os
 from datetime import datetime
 from PIL import Image
 
-# Hier: dein echtes Backend (z. B. Stable Diffusion Wrapper)
+# 🧠 Dein echter Motor
 from my_model_lib import load_model, run_inference
-
-# 📁 MODEL-PFAD ZUORDNUNG (manuell pflegbar)
-MODEL_PATHS = {
-    "absolutereality": "/workspace/ai-core/models/txt2img/absolutereality_v1.8.safetensors",
-    "deliberate": "/workspace/ai-core/models/txt2img/deliberate.safetensors",
-    "epicrealism": "/workspace/ai-core/models/txt2img/epicrealism_v6.safetensors"
-}
-
-# 🔄 Cache geladener Modelle
-loaded_models = {}
-
-# 🔍 Modell nach Name laden
-def get_model(name: str):
-    if name in loaded_models:
-        return loaded_models[name]
-    
-    path = MODEL_PATHS.get(name)
-    if not path or not os.path.exists(path):
-        raise ValueError(f"❌ Modell '{name}' nicht gefunden oder Pfad ungültig!")
-
-    model = load_model(path)
-    loaded_models[name] = model
-    return model
 
 # 🖼️ Hauptfunktion: Prompt → Bild
 def generate_image_from_json(params: dict):
@@ -54,7 +31,7 @@ def generate_image_from_json(params: dict):
             controlnet = {}
 
         # 📦 Modell laden
-        model = get_model(model_name)
+        model = load_model(model_name)
 
         # 🧠 Bild generieren
         image = run_inference(
