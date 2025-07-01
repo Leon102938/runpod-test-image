@@ -13,8 +13,19 @@ diffusers==0.25.0
 transformers==4.38.0
 huggingface_hub==0.20.3
 pillow
+omegaconf
+safetensors
+
+
+
+# ───── LoRA / ControlNet / SDXL Support (Optional, aber ready) ─────
+#accelerate                  # nötig für viele diffusers-pipelines
+#xformers                    # optional, für RAM-Optimierung
+#einops                      # genutzt von manchen Modelle
+
+
 
 # ───── Audio/Voice (wenn geplant) ─────
-scipy               # für Musikgen & Audio
-librosa             # für Audiobearbeitung
-soundfile           # für Audio-Output
+#scipy               # für Musikgen & Audio
+#librosa             # für Audiobearbeitung
+#soundfile           # für Audio-Output
