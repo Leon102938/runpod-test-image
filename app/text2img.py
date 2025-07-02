@@ -2,7 +2,7 @@
 import os
 from datetime import datetime
 from PIL import Image
-import json  # <--- für Log-Ausgabe
+import json
 
 # 🧠 Dein echter Motor
 from my_model_lib import load_model, run_inference
@@ -17,7 +17,6 @@ def generate_image_from_json(params: dict):
         print(json.dumps(params, indent=4))
         print("="*60 + "\n")
 
-        # Optional: dauerhaft in Datei schreiben
         try:
             os.makedirs("/workspace/logs", exist_ok=True)
             with open("/workspace/logs/inference.log", "a") as f:
@@ -26,15 +25,15 @@ def generate_image_from_json(params: dict):
         except Exception as log_error:
             print(f"⚠️ Logging failed: {log_error}")
 
-        # 📥 Eingabeparameter extrahieren (mit Defaults)
-        prompt = params.get("prompt", "")
+        # 📥 Eingabeparameter ohne Fallbacks
+        prompt = params["prompt"]
         negative_prompt = params.get("negative_prompt", "")
-        model_name = params.get("model", "absolutereality")
-        width = int(params.get("width", 832))
-        height = int(params.get("height", 1242))
-        steps = int(params.get("steps", 30))
-        cfg = float(params.get("cfg", 7.0))
-        sampler = params.get("sampler", "Euler")
+        model_name = params["model"]
+        width = int(params["width"])
+        height = int(params["height"])
+        steps = int(params["steps"])
+        cfg = float(params["cfg"])
+        sampler = params["sampler"]
         seed = params.get("seed", None)
         upscale = bool(params.get("upscale", False))
         output_path = params.get("output_path")
@@ -65,11 +64,11 @@ def generate_image_from_json(params: dict):
             controlnet=controlnet
         )
 
-        # 🆙 Optional Upscaling
+        # 🆙 Upscaling (nur wenn explizit true)
         if upscale:
             image = image.resize((width * 2, height * 2), Image.LANCZOS)
 
-        # 💾 Pfad vorbereiten
+        # 💾 Output speichern
         if not output_path:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_path = f"/workspace/output/txt2img_{timestamp}.png"
@@ -81,4 +80,5 @@ def generate_image_from_json(params: dict):
 
     except Exception as e:
         return {"status": "❌ Failed", "error": str(e)}
+
 
