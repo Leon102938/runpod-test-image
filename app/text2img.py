@@ -2,6 +2,7 @@
 import os
 from datetime import datetime
 from PIL import Image
+import json  # <--- für Log-Ausgabe
 
 # 🧠 Dein echter Motor
 from my_model_lib import load_model, run_inference
@@ -9,6 +10,22 @@ from my_model_lib import load_model, run_inference
 # 🖼️ Hauptfunktion: Prompt → Bild
 def generate_image_from_json(params: dict):
     try:
+        # 📋 LOGGING (Debug-Ausgabe + Speicherung)
+        print("\n" + "="*60)
+        print(f"📅 GENERATION TIMESTAMP: {datetime.now().isoformat()}")
+        print("🚀 INFERENCE CONFIGURATION:")
+        print(json.dumps(params, indent=4))
+        print("="*60 + "\n")
+
+        # Optional: dauerhaft in Datei schreiben
+        try:
+            os.makedirs("/workspace/logs", exist_ok=True)
+            with open("/workspace/logs/inference.log", "a") as f:
+                f.write(f"\n[{datetime.now().isoformat()}] Inference:\n")
+                f.write(json.dumps(params, indent=4) + "\n")
+        except Exception as log_error:
+            print(f"⚠️ Logging failed: {log_error}")
+
         # 📥 Eingabeparameter extrahieren (mit Defaults)
         prompt = params.get("prompt", "")
         negative_prompt = params.get("negative_prompt", "")

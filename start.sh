@@ -10,11 +10,17 @@ mkdir -p /workspace/ai-core/models/txt2img
 # CRLF (Windows-Zeilenumbrüche) fixen
 sed -i 's/\r$//' /workspace/filelist.txt
 
-# Modelle parallel laden
-echo "⏳ Lade Modelle (parallel, max 8 gleichzeitig)..."
-cat /workspace/filelist.txt | xargs -n 1 -P 8 wget --show-progress -P /workspace/ai-core/models/txt2img
+# Nur herunterladen, wenn Modelle noch nicht existieren
+MODEL_DIR="/workspace/ai-core/models/txt2img"
+MODEL_COUNT=$(ls "$MODEL_DIR"/*.safetensors 2>/dev/null | wc -l)
 
-echo "✅ Modelle erfolgreich geladen!"
+if [ "$MODEL_COUNT" -lt 8 ]; then
+  echo "⏳ Lade Modelle (parallel, max 8 gleichzeitig)..."
+  cat /workspace/filelist.txt | xargs -n 1 -P 8 wget --show-progress -P "$MODEL_DIR"
+  echo "✅ Modelle erfolgreich geladen!"
+else
+  echo "✅ Modelle bereits vorhanden – Überspringe Download."
+fi
 
 # Pythonpath setzen (damit FastAPI die Module findet)
 export PYTHONPATH="$PYTHONPATH:/workspace/app"
