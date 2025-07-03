@@ -76,7 +76,16 @@ def generate_image_from_json(params: dict):
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         image.save(output_path)
 
-        return {"status": "✅ Success", "output_path": output_path}
+        # 🌐 Output-URL zusätzlich zurückgeben
+        base_url = os.getenv("BASE_URL", "http://localhost:8000")
+        rel_path = os.path.relpath(output_path, start=".")
+        url = f"{base_url}/{rel_path}"
+
+        return {
+            "status": "✅ Success",
+            "output_path": output_path,
+            "output_url": url
+        }
 
     except Exception as e:
         return {"status": "❌ Failed", "error": str(e)}

@@ -2,9 +2,13 @@
 
 # 📦 INSTALLATIONEN & IMPORTS
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 import uvicorn
+import os
+
 
 # 🧠 TOOL IMPORTS
 from text2img import generate_image_from_json         # txt2img Logik
@@ -12,6 +16,11 @@ from img2vid import generate_video_from_json          # img2vid Logik (NEU)
 
 # 🚀 FASTAPI APP INITIALISIEREN
 app = FastAPI()
+
+
+#output_url
+app.mount("/workspace", StaticFiles(directory="workspace"), name="workspace")
+
 
 # 📄 DATENSTRUKTUR | TXT2IMG INPUT MODELL
 class Txt2ImgRequest(BaseModel):
@@ -46,7 +55,16 @@ async def txt2img_route(request: Request):
     # 💡 Empfängt JSON mit Bildparametern und startet Bildgenerierung
     data = await request.json()
     image_path = generate_image_from_json(data)
-    return {"output": image_path}
+
+    # Baue absolute URL (für späteren Direktzugriff z. B. via img2vid)
+    base_url = str(request.base_url).rstrip("/")
+    rel_path = os.path.relpath(image_path, start=".")
+    full_url = f"{base_url}/{rel_path}"
+
+    return JSONResponse(content={
+        "output_path": image_path,
+        "output_url": full_url
+    })
 
 
 # 📄 DATENSTRUKTUR | IMG2VID INPUT MODELL (NEU)

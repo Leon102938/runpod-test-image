@@ -2,6 +2,7 @@
 
 import torch
 from diffusers import AnimateDiffPipeline
+from urllib.request import urlopen
 from PIL import Image
 import numpy as np
 import random
@@ -42,8 +43,12 @@ def run_video_inference(
     else:
         generator = torch.manual_seed(random.randint(0, 999999))
 
-    # 🖼️ Bild vorbereiten
-    image = Image.open(image_path).convert("RGB")
+    # 🖼️ Bild vorbereiten (lokal oder URL)
+    if image_path.startswith("http://") or image_path.startswith("https://"):
+        image = Image.open(urlopen(image_path)).convert("RGB")
+    else:
+        image = Image.open(image_path).convert("RGB")
+
     image = image.resize((512, 512))  # Modelltypisch
     image_tensor = torch.tensor(np.array(image)).permute(2, 0, 1).float() / 255.0
     image_tensor = image_tensor.unsqueeze(0).to("cuda")
