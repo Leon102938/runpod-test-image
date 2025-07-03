@@ -19,6 +19,7 @@ app = FastAPI()
 
 
 #output_url
+os.makedirs("workspace", exist_ok=True)
 app.mount("/workspace", StaticFiles(directory="workspace"), name="workspace")
 
 
@@ -58,6 +59,8 @@ async def txt2img_route(request: Request):
 
     # Baue absolute URL (für späteren Direktzugriff z. B. via img2vid)
     base_url = str(request.base_url).rstrip("/")
+    if isinstance(image_path, dict):
+       image_path = image_path.get("image", "")
     rel_path = os.path.relpath(image_path, start=".")
     full_url = f"{base_url}/{rel_path}"
 
