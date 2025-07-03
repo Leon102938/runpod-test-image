@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 
 # 🧠 Dein echter Motor (muss angepasst werden auf dein reales Backend!)
-from my_video_lib import load_video_model, run_video_inference
+from img2vid_engine import load_video_model, run_video_inference
 
 # 🎥 Hauptfunktion: Bild → Video
 def generate_video_from_json(params: dict):

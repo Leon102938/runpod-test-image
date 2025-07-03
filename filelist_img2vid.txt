@@ -1,1 +1,2 @@
-https://huggingface.co/neggles/animatediff-modules/resolve/main/mm_sd_v14_fp16.safetensors
+https://huggingface.co/neggles/animatediff-modules/resolve/main/mm_sd_v14.fp16.safetensors
+
