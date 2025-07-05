@@ -11,8 +11,10 @@ WORKDIR /workspace
 
 # Alles kopieren
 COPY . .
+COPY start.sh /workspace/start.sh
 
 # Rechte setzen
+RUN chmod +x /workspace/start.sh
 
 
 # Python-Abhängigkeiten
