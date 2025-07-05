@@ -1,27 +1,23 @@
-FROM python:3.11-slim
+FROM nvidia/cuda:12.2.0-base-ubuntu22.04
 
-# Tools installieren
-RUN apt-get update && apt-get install -y \
-    git curl unzip sudo tmux nano rclone fuse wget \
- && rm -rf /var/lib/apt/lists/*
-
-
-# Arbeitsverzeichnis
 WORKDIR /workspace
 
-# Alles kopieren
+RUN apt update && apt install -y \
+    python3.10 \
+    python3-pip \
+    git \
+    && apt clean
+
+COPY requirements.txt .
+RUN python3.10 -m pip install -r requirements.txt
+
 COPY . .
-COPY start.sh /workspace/start.sh
 
-# Rechte setzen
-RUN chmod +x /workspace/start.sh
+# ENTRYPOINT explizit setzen für Vast
+ENTRYPOINT ["/bin/bash"]
 
-
-# Python-Abhängigkeiten
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Container-Start
-CMD ["bash", "start.sh"]
+# Startscript wird dann als Argument übergeben
+CMD ["start.sh"]
 
 
 
