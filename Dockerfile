@@ -1,10 +1,13 @@
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu20.04
 
-# 🧰 Tools & Python installieren
-RUN apt-get update && apt-get install -y \
-    python3.11 python3-pip \
-    git curl unzip sudo tmux nano rclone fuse wget \
- && rm -rf /var/lib/apt/lists/*
+# 🧰 Tools & Python 3.11 über Deadsnakes installieren
+RUN apt-get update && apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && apt-get install -y \
+    python3.11 python3.11-venv python3.11-dev python3-pip \
+    git curl unzip sudo tmux nano rclone fuse wget && \
+    rm -rf /var/lib/apt/lists/*
+
 
 # 🧠 Python / pip verlinken – wichtig für Kompatibilität
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python && ln -sf /usr/bin/pip3 /usr/bin/pip
