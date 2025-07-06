@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+ FROM python:3.11-slim
 
 # Tools installieren
 RUN apt-get update && apt-get install -y \
@@ -16,9 +16,6 @@ COPY . .
 # Python-Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Port für FastAPI explizit freigeben
-EXPOSE 8000
-EXPOSE 8888
 
 # Container-Start
 CMD ["bash", "start.sh"]
