@@ -7,7 +7,7 @@ pydantic
 jupyterlab
 
 # ───── Bild-/Video-Modelle ─────
-numpy==1.26.0
+numpy==1.25.2
 torch==2.2.0
 diffusers==0.25.0
 transformers==4.38.0
