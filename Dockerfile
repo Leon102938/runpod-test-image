@@ -14,7 +14,10 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 # 🔁 Python / pip verlinken
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python && ln -sf /usr/bin/pip3 /usr/bin/pip
 
-# 🧠 Torch manuell installieren (fix für xformers + networkx Probleme)
+# 🧰 Pip upgraden (Fix für html5lib-Fehler)
+RUN python3.11 -m pip install --upgrade pip setuptools wheel
+
+# 🧠 Torch manuell installieren
 RUN python3.11 -m pip install --no-cache-dir \
     torch==2.2.2 \
     torchvision==0.17.2 \
