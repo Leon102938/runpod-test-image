@@ -11,10 +11,10 @@ WORKDIR /workspace
 
 # Alles kopieren
 COPY . .
-COPY start.sh /workspace/start.sh
 
-# Rechte setzen
-RUN chmod +x /workspace/start.sh
+
+# Speziell sicherstellen: start.sh liegt wirklich drin
+RUN chmod +x /start.sh
 
 
 # Python-Abhängigkeiten
@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Port für FastAPI explizit freigeben
 EXPOSE 8000
+EXPOSE 8888
 
 # Container-Start
 CMD ["bash", "start.sh"]
