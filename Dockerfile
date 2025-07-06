@@ -13,10 +13,6 @@ WORKDIR /workspace
 COPY . .
 
 
-# Speziell sicherstellen: start.sh liegt wirklich drin
-RUN chmod +x /start.sh
-
-
 # Python-Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
 
