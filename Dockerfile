@@ -20,6 +20,9 @@ RUN chmod +x /workspace/start.sh
 # Python-Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Port für FastAPI explizit freigeben
+EXPOSE 8000
+
 # Container-Start
 CMD ["bash", "start.sh"]
 
