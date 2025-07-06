@@ -14,8 +14,13 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 # 🔁 Python / pip verlinken
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python && ln -sf /usr/bin/pip3 /usr/bin/pip
 
-# 📦 Torch separat installieren (für xformers-Fix!)
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# 🧠 Torch manuell installieren (fix für xformers + networkx Probleme)
+RUN pip install --no-cache-dir \
+    torch==2.2.2 \
+    torchvision==0.17.2 \
+    torchaudio==2.2.2 \
+    networkx==3.2.1 \
+    --index-url https://download.pytorch.org/whl/cu121
 
 # 📁 Arbeitsverzeichnis
 WORKDIR /workspace
