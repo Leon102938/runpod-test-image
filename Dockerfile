@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python && ln -sf /usr/bin/pip3 /usr/bin/pip
 
 # 🧠 Torch manuell installieren (fix für xformers + networkx Probleme)
-RUN pip install --no-cache-dir \
+RUN python3.11 -m pip install --no-cache-dir \
     torch==2.2.2 \
     torchvision==0.17.2 \
     torchaudio==2.2.2 \
