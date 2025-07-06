@@ -14,16 +14,19 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 # 🔁 Python / pip verlinken
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python && ln -sf /usr/bin/pip3 /usr/bin/pip
 
-# 🧰 Pip upgraden (Fix für html5lib-Fehler)
-RUN python3.11 -m pip install --upgrade pip setuptools wheel
+# 🛠️ Fix für html5lib-Import-Fehler in Pip
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+RUN pip install --upgrade setuptools wheel
+
 
 # 🧠 Torch manuell installieren
-RUN python3.11 -m pip install --no-cache-dir \
+RUN pip install --no-cache-dir \
     torch==2.2.2 \
     torchvision==0.17.2 \
     torchaudio==2.2.2 \
     networkx==3.2.1 \
     --index-url https://download.pytorch.org/whl/cu121
+
 
 # 📁 Arbeitsverzeichnis
 WORKDIR /workspace
