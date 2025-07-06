@@ -20,6 +20,10 @@ RUN chmod +x /workspace/start.sh
 # Python-Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 📢 Ports freigeben
+EXPOSE 8000
+EXPOSE 8888
+
 # Container-Start
 CMD ["bash", "start.sh"]
 
