@@ -1,4 +1,4 @@
- FROM python:3.11-slim
+FROM python:3.11-slim
 
 # Tools installieren
 RUN apt-get update && apt-get install -y \
@@ -12,10 +12,11 @@ WORKDIR /workspace
 # Alles kopieren
 COPY . .
 
+# Rechte setzen
+RUN chmod +x /start.sh
 
 # Python-Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
-
 
 # Container-Start
 CMD ["bash", "start.sh"]
