@@ -12,8 +12,6 @@ WORKDIR /workspace
 # Alles kopieren
 COPY . .
 
-# Rechte setzen
-RUN chmod +x /start.sh
 
 # Python-Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
