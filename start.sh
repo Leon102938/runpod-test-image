@@ -66,9 +66,9 @@ if [ "$JUPYTER" == "on" ]; then
     > /workspace/jupyter.log 2>&1 &
 fi
 
-# ============ 🔷 FASTAPI (Port 7860) ============
+# ============ 🔷 FASTAPI (Port 8000) ============
 if [ "$FASTAPI" == "on" ]; then
-  echo "🚀 Starte zentrale FastAPI (Port 7860)..."
+  echo "🚀 Starte zentrale FastAPI (Port 8000)..."
   nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > /workspace/fastapi.log 2>&1 &
 fi
 

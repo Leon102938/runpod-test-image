@@ -36,7 +36,10 @@ def generate_video_from_json(params: dict):
         loop = bool(params.get("loop", False))
         interpolate = bool(params.get("interpolate", False))
         camera_motion = params.get("camera_motion", "none")
-        output_path = params.get("output_path")
+
+        # 🧠 Modellpfad anpassen (nur Dateiname → ganzer Pfad)
+        if not os.path.isabs(model_name):
+            model_name = os.path.join("/workspace/ai-core/models/IMG2Vid", model_name)
 
         # 🧠 Modell laden
         model = load_video_model(model_name)
@@ -56,11 +59,9 @@ def generate_video_from_json(params: dict):
             camera_motion=camera_motion
         )
 
-        # 💾 Output speichern
-        if not output_path:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_path = f"/workspace/output/img2vid_{timestamp}.mp4"
-
+        # 💾 Output automatisch erzeugen & speichern
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_path = f"/workspace/output/img2vid_{timestamp}.mp4"
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         with open(output_path, "wb") as f:
@@ -70,6 +71,3 @@ def generate_video_from_json(params: dict):
 
     except Exception as e:
         return {"status": "❌ Failed", "error": str(e)}
-
-
-

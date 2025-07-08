@@ -1,13 +1,11 @@
 import os
 from datetime import datetime
 from PIL import Image
-import json
-
 from my_model_lib import load_model, run_inference
 
 def generate_image_from_json(params: dict):
     try:
-        # Eingaben
+        # 📥 Eingabeparameter
         prompt = params["prompt"]
         model_name = params["model"]
         width = int(params["width"])
@@ -18,8 +16,8 @@ def generate_image_from_json(params: dict):
         seed = params.get("seed")
         upscale = bool(params.get("upscale", False))
 
+        # 🧠 Modell laden & Bild generieren
         model = load_model(model_name)
-
         image = run_inference(
             model=model,
             prompt=prompt,
@@ -34,17 +32,21 @@ def generate_image_from_json(params: dict):
             controlnet=params.get("controlnet", {})
         )
 
+        # 🔍 Optional Upscale
         if upscale:
             image = image.resize((width * 2, height * 2), Image.LANCZOS)
 
-        # Speicherpfad (automatisch)
+        # 📁 Speicherpfad dynamisch ermitteln
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))            # → /workspace/app
+        OUTPUT_DIR = os.path.abspath(os.path.join(BASE_DIR, "../output"))  # → /workspace/output
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"txt2img_{timestamp}.png"
-        output_path = f"/workspace/output/{filename}"
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        image.save(output_path)
+        save_path = os.path.join(OUTPUT_DIR, filename)
+        image.save(save_path)
 
-        # Nur URL zurückgeben
+        # 🌍 Rückgabe der URL (automatisch per ENV oder Default)
         pod_url = os.getenv("BASE_URL", "https://YOURPOD-8000.proxy.runpod.net")
         return f"{pod_url}/output/{filename}"
 

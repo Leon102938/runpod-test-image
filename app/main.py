@@ -15,9 +15,21 @@ from img2vid import generate_video_from_json
 # 🚀 INITIALISIERE FASTAPI
 app = FastAPI()
 
+# 📂 DYNAMISCHER OUTPUT-PFAD
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))                    # → /workspace/app
+OUTPUT_DIR = os.path.abspath(os.path.join(BASE_DIR, "../output"))       # → /workspace/output
+
+# 🛠️ Debug-Ausgabe
+print("📂 BASE_DIR:", BASE_DIR)
+print("📂 OUTPUT_DIR:", OUTPUT_DIR)
+if os.path.exists(OUTPUT_DIR):
+    print("📁 OUTPUT-Dateien:", os.listdir(OUTPUT_DIR))
+else:
+    print("⚠️  OUTPUT-Ordner fehlt!")
+
 # 📂 MOUNTE BILDAUSGABE
-os.makedirs("/workspace/output", exist_ok=True)
-app.mount("/output", StaticFiles(directory="/workspace/output"), name="output")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+app.mount("/output", StaticFiles(directory=OUTPUT_DIR), name="output")
 
 # 📄 DATENSTRUKTUR FÜR /txt2img
 class Txt2ImgRequest(BaseModel):
@@ -55,11 +67,25 @@ class Img2VidRequest(BaseModel):
     camera_motion: Optional[str] = "none"
     output_path: Optional[str] = None
 
-# 🔁 IMG2VID-ENDPOINT
 @app.post("/img2vid")
 async def img2vid_route(request: Img2VidRequest):
-    video_path = generate_video_from_json(request.dict())
-    return {"output": video_path}
+    result = generate_video_from_json(request.dict())
+
+    # 🛑 Fehlerbehandlung
+    if not result or result.get("status") != "✅ Success":
+        return JSONResponse(status_code=500, content={
+            "status": result.get("status", "❌ Failed"),
+            "error": result.get("error", "Unbekannter Fehler im img2vid_endpoint")
+        })
+
+    # ✅ Erfolgreich
+    output_path = result["output_path"]  # <--- korrekt!
+    filename = os.path.basename(output_path)
+    pod_url = os.getenv("BASE_URL", "https://YOURPOD-8000.proxy.runpod.net")
+    return {"output_url": f"{pod_url}/output/{filename}"}
+
+
+
 
 
 
