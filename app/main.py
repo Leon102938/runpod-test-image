@@ -5,8 +5,13 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from dotenv import load_dotenv
 from typing import Optional
 import os
+
+# ✅ .env laden & BASE_URL setzen
+load_dotenv("/workspace/.env")
+BASE_URL = os.getenv("BASE_URL", "https://YOURPOD-8000.proxy.runpod.net")
 
 # 🧠 IMPORTIERE TOOLS
 from text2img import generate_image_from_json
@@ -49,8 +54,9 @@ class Txt2ImgRequest(BaseModel):
 # 🔁 TXT2IMG-ENDPOINT
 @app.post("/txt2img")
 async def txt2img_route(request: Txt2ImgRequest):
-    url = generate_image_from_json(request.dict())
-    return JSONResponse(content={"output_url": url})
+    output_path = generate_image_from_json(request.dict())
+    filename = os.path.basename(output_path)
+    return JSONResponse(content={"output_url": f"{BASE_URL}/output/{filename}"})
 
 # 📄 DATENSTRUKTUR FÜR /img2vid
 class Img2VidRequest(BaseModel):
@@ -79,10 +85,10 @@ async def img2vid_route(request: Img2VidRequest):
         })
 
     # ✅ Erfolgreich
-    output_path = result["output_path"]  # <--- korrekt!
+    output_path = result["output_path"]
     filename = os.path.basename(output_path)
-    pod_url = os.getenv("BASE_URL", "https://YOURPOD-8000.proxy.runpod.net")
-    return {"output_url": f"{pod_url}/output/{filename}"}
+    return {"output_url": f"{BASE_URL}/output/{filename}"}
+
 
 
 
