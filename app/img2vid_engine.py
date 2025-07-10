@@ -12,7 +12,7 @@ import os
 
 # 🔁 Modell laden
 def load_video_model(model_name: str):
-    model_path = f"/workspace/ai-core/models/IMG2Vid/{model_name}"
+    model_path = model_name
     pipe = AnimateDiffPipeline.from_pretrained(
         model_path,
         torch_dtype=torch.float16

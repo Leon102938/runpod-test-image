@@ -3,12 +3,15 @@ import os
 from datetime import datetime
 import json
 
-# 🧠 Dein echter Motor (muss angepasst werden auf dein reales Backend!)
+# 🧠 Dein echter Motor
 from img2vid_engine import load_video_model, run_video_inference
 
-# 🎥 Hauptfunktion: Bild → Video
+# 🎥 Hauptfunktion: Bild → Video (und optional Text → Video)
 def generate_video_from_json(params: dict):
     try:
+        if not params:
+            raise ValueError("⛔ Keine Parameter erhalten (params ist None oder leer)")
+
         # 📋 LOGGING (Debug-Ausgabe + Speicherung)
         print("\n" + "="*60)
         print(f"📅 VIDEO GENERATION TIMESTAMP: {datetime.now().isoformat()}")
@@ -24,25 +27,31 @@ def generate_video_from_json(params: dict):
         except Exception as log_error:
             print(f"⚠️ Video Logging failed: {log_error}")
 
-        # 📥 Eingabeparameter (ohne Fallbacks)
-        prompt = params["prompt"]
+        # ✅ Eingabeparameter mit Schutz + Defaults
+        prompt = params.get("prompt", "")
+        if not prompt:
+            raise ValueError("⛔ Prompt fehlt!")
+
         negative_prompt = params.get("negative_prompt", "")
-        image_path = params["image_path"]
-        model_name = params["model"]
-        fps = int(params["fps"])
-        duration = int(params["duration"])
-        motion_strength = float(params["motion_strength"])
+        image_path = params.get("image_path", None)  # ← optional für txt2vid!
+        model_name = params.get("model")
+        if not model_name:
+            raise ValueError("⛔ Model-Name fehlt!")
+
+        fps = int(params.get("fps", 16))
+        duration = int(params.get("duration", 4))
+        motion_strength = float(params.get("motion_strength", 1.2))
         seed = params.get("seed", None)
         loop = bool(params.get("loop", False))
         interpolate = bool(params.get("interpolate", False))
         camera_motion = params.get("camera_motion", "none")
 
-        # 🧠 Modellpfad anpassen (nur Dateiname → ganzer Pfad)
-        if not os.path.isabs(model_name):
-            model_name = os.path.join("/workspace/ai-core/models/IMG2Vid", model_name)
+        # 🔧 Modellpfad zusammensetzen
+        model_dir = "/workspace/ai-core/models/IMG2Vid"
+        model_path = os.path.join(model_dir, model_name)
 
         # 🧠 Modell laden
-        model = load_video_model(model_name)
+        model = load_video_model(model_path)
 
         # 🎬 Video generieren
         video = run_video_inference(
@@ -70,4 +79,5 @@ def generate_video_from_json(params: dict):
         return {"status": "✅ Success", "output_path": output_path}
 
     except Exception as e:
+        print(f"❌ EXCEPTION: {str(e)}")
         return {"status": "❌ Failed", "error": str(e)}
