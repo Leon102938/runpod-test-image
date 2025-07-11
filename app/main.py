@@ -3,6 +3,7 @@
 # 📦 IMPORTS
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from img2vid_engine_wan import run_img2vid_wan
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -58,16 +59,15 @@ async def txt2img_route(request: Txt2ImgRequest):
     filename = os.path.basename(output_path)
     return JSONResponse(content={"output_url": f"{BASE_URL}/output/{filename}"})
 
-# 📄 DATENSTRUKTUR FÜR /img2vid
+# 📄 DATENSTRUKTUR FÜR /img2vid WAN2.1
 class Img2VidRequest(BaseModel):
     prompt: str
-    negative_prompt: Optional[str] = ""
-    image_path: str
-    fps: int
-    duration: int
-    motion_strength: float
+    image_url: str  # ⬅️ statt image_path
+    fps: int = 12
+    duration: int = 3  # Sekunden
+    motion_strength: float = 1.0
     seed: Optional[int] = None
-    model: str
+    model: str = "WAN2.1"
     loop: Optional[bool] = False
     interpolate: Optional[bool] = False
     camera_motion: Optional[str] = "none"
@@ -75,23 +75,26 @@ class Img2VidRequest(BaseModel):
 
 @app.post("/img2vid")
 async def img2vid_route(request: Img2VidRequest):
-    result = generate_video_from_json(request.dict())
+    try:
+        # Wandelt Request in Dict
+        params = request.dict()
 
-    # 🛑 Fehlerbehandlung
-    if not result or result.get("status") != "✅ Success":
-        return JSONResponse(status_code=500, content={
-            "status": result.get("status", "❌ Failed"),
-            "error": result.get("error", "Unbekannter Fehler im img2vid_endpoint")
-        })
+        # Übergibt an deine WAN2.1 Engine
+        result = run_img2vid_wan(**params)
 
-    # ✅ Erfolgreich
-    output_path = result["output_path"]
-    filename = os.path.basename(output_path)
-    return {"output_url": f"{BASE_URL}/output/{filename}"}
+        # Fehler?
+        if not result or result.get("status") != "✅ Success":
+            return JSONResponse(status_code=500, content={
+                "status": result.get("status", "❌ Failed"),
+                "error": result.get("error", "Unbekannter Fehler in WAN2.1")
+            })
 
+        # ✅ Alles lief durch – Pfad zurückgeben
+        output_path = result["output_path"]
+        filename = os.path.basename(output_path)
+        return {"output_url": f"{BASE_URL}/output/{filename}"}
 
-
-
-
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "❌ Exception", "error": str(e)})
 
 
