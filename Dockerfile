@@ -1,14 +1,14 @@
 # ⚙️ CUDA 12.1.1 + cuDNN8 + Ubuntu 20.04
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu20.04
 
-# 🧰 Tools & Build-Essentials + Python 3.11 von Deadsnakes
+# 🧰 Tools & Build-Essentials + Python 3.11 von Deadsnakes + aria2
 RUN apt-get update && apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && apt-get install -y \
     build-essential \
     python3.11 python3.11-venv python3.11-dev python3-pip \
-    git curl unzip sudo tmux nano rclone fuse wget && \
-    rm -rf /var/lib/apt/lists/*
+    git curl unzip sudo tmux nano rclone fuse wget aria2 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
 # 🔁 Python / pip verlinken

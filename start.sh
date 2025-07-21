@@ -18,24 +18,6 @@ else
     echo "✅ BASE_URL erfolgreich gesetzt: $BASE_URL"
 fi
 
-# ============ 🔹 TXT2IMG MODELLE LADEN ============
-echo "📦 Starte Modellauswahl aus filelist.txt ..."
-mkdir -p /workspace/ai-core/models/txt2img
-
-# CRLF fixen
-sed -i 's/\r$//' /workspace/filelist.txt
-
-# Nur herunterladen, wenn < 8 Modelle existieren
-MODEL_DIR="/workspace/ai-core/models/txt2img"
-MODEL_COUNT=$(ls "$MODEL_DIR"/*.safetensors 2>/dev/null | wc -l)
-
-if [ "$MODEL_COUNT" -lt 8 ]; then
-  echo "⏳ Lade txt2img-Modelle..."
-  cat /workspace/filelist.txt | xargs -n 1 -P 8 wget --show-progress -P "$MODEL_DIR"
-  echo "✅ txt2img-Modelle erfolgreich geladen!"
-else
-  echo "✅ txt2img-Modelle bereits vorhanden – Überspringe Download."
-fi
 
 
 # ============ 🔧 PYTHONPATH ============
