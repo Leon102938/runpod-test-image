@@ -1,25 +1,23 @@
-# ⚙️ CUDA 12.1.1 + cuDNN8 + Ubuntu 20.04
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu20.04
 
-# 🧰 Tools & Build-Essentials + Python 3.11 von Deadsnakes + aria2
+# 🧰 Tools & Python 3.11
 RUN apt-get update && apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && apt-get install -y \
     build-essential \
-    python3.11 python3.11-venv python3.11-dev python3-pip \
-    git curl unzip sudo tmux nano rclone fuse wget aria2 && \
+    python3.11 python3.11-venv python3.11-dev \
+    git curl unzip sudo nano tmux aria2 wget rclone fuse \
+    libsentencepiece-dev ffmpeg && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# 🐍 Python + Pip
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 && \
+    ln -sf /usr/bin/python3.11 /usr/bin/python && \
+    ln -sf /usr/local/bin/pip /usr/bin/pip
 
-# 🔁 Python / pip verlinken
-RUN ln -sf /usr/bin/python3.11 /usr/bin/python && ln -sf /usr/bin/pip3 /usr/bin/pip
+RUN pip install --upgrade pip setuptools wheel packaging
 
-# 🛠️ Fix für html5lib-Import-Fehler in Pip
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
-RUN pip install --upgrade setuptools wheel
-
-
-# 🧠 Torch manuell installieren
+# 🧠 PyTorch CUDA 12.1
 RUN pip install --no-cache-dir \
     torch==2.2.2 \
     torchvision==0.17.2 \
@@ -27,28 +25,25 @@ RUN pip install --no-cache-dir \
     networkx==3.2.1 \
     --index-url https://download.pytorch.org/whl/cu121
 
-
 # 📁 Arbeitsverzeichnis
 WORKDIR /workspace
 
 # 🔁 Dateien kopieren
 COPY . .
 COPY start.sh /workspace/start.sh
-
-# ✅ Rechte setzen
 RUN chmod +x /workspace/start.sh
 
-# 🧠 Python-Abhängigkeiten
+# 🧠 Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 📢 Ports freigeben
+# ⚙️ HF-Cache optimieren (optional, aber empfohlen)
+ENV HF_HOME=/workspace/.cache/huggingface
+ENV TRANSFORMERS_CACHE=$HF_HOME/transformers
+ENV HF_HUB_CACHE=$HF_HOME/hub
+
+# 📢 Ports
 EXPOSE 8000
 EXPOSE 8888
 
-# 🚀 Start
+# 🚀 Startkommando
 CMD ["bash", "start.sh"]
-
-
-
-
-
