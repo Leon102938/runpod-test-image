@@ -1,3 +1,4 @@
+# ⚙️ CUDA 12.1.1 + cuDNN8 + Ubuntu 20.04
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu20.04
 
 # 🧰 Tools & Python 3.11
@@ -31,6 +32,8 @@ WORKDIR /workspace
 # 🔁 Dateien kopieren
 COPY . .
 COPY start.sh /workspace/start.sh
+
+# ✅ Rechte setzen
 RUN chmod +x /workspace/start.sh
 
 # 🧠 Abhängigkeiten
