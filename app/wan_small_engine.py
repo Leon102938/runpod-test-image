@@ -1,63 +1,59 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import os
 import torch
-from torchvision.utils import save_image
-from PIL import Image
-import imageio
-from safetensors.torch import load_file
-from diffusers import AutoencoderKL, UNet2DConditionModel, DDIMScheduler
-from transformers import T5Tokenizer, T5EncoderModel
 import argparse
-import json
+import imageio
+from torchvision.utils import save_image
+from transformers import T5Tokenizer, T5EncoderModel
+from diffusers import UNet2DConditionModel, DDIMScheduler, AutoencoderKL
 
-# ----------- CONFIG -----------
-MODEL_DIR = "/workspace/app/models"
+# -------- CONFIG --------
+MODEL_DIR = "/workspace/models/wan2.1"
 OUTPUT_FRAMES_DIR = "frames"
-VAE_PATH = os.path.join(MODEL_DIR, "Wan2.1_VAE.pth")
-UNET_WEIGHTS_PATH = os.path.join(MODEL_DIR, "diffusion_pytorch_model.safetensors")
-UNET_CONFIG_PATH = os.path.join(MODEL_DIR, "config.json")
-TEXT_ENCODER_NAME = "google/umt5-base"
+TOKENIZER_NAME = "t5-base"  # oder "google/umt5-xxl" wenn GPU & RAM passen
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-# ----------- TEXT ENCODING -----------
+# -------- LOADERS --------
 def load_text_embedding(prompt):
-    print(f"[INFO] Loading T5 tokenizer & encoder: {TEXT_ENCODER_NAME}")
-    tokenizer = T5Tokenizer.from_pretrained(TEXT_ENCODER_NAME)
-    encoder = T5EncoderModel.from_pretrained(TEXT_ENCODER_NAME).to(DEVICE)
+    print("[INFO] Loading tokenizer & encoder...")
+    tokenizer = T5Tokenizer.from_pretrained(TOKENIZER_NAME)
+    encoder = T5EncoderModel.from_pretrained(TOKENIZER_NAME).to(DEVICE).eval()
     tokens = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True).input_ids.to(DEVICE)
     with torch.no_grad():
         embedding = encoder(input_ids=tokens).last_hidden_state
     print(f"[DEBUG] Text embedding shape: {embedding.shape}")
-    if torch.isnan(embedding).any():
-        raise ValueError("Embedding contains NaNs. TextEncoder failed.")
     return embedding
 
-# ----------- SAVE VIDEO -----------
-def save_frames_to_video(frame_dir, output_path, fps=8):
-    frames = sorted([os.path.join(frame_dir, f) for f in os.listdir(frame_dir) if f.endswith(".png")])
-    imgs = [imageio.v2.imread(f) for f in frames]
-    imageio.mimsave(output_path, imgs, fps=fps)
-    print(f"[INFO] Saved video to {output_path}")
+def load_unet():
+    print("[INFO] Loading UNet from", MODEL_DIR)
+    return UNet2DConditionModel.from_pretrained(
+        MODEL_DIR,
+        use_safetensors=True
+    ).to(DEVICE).eval()
 
-# ----------- MAIN FUNCTION -----------
+def load_vae():
+    print("[INFO] Loading VAE from", MODEL_DIR)
+    return AutoencoderKL.from_pretrained(
+        MODEL_DIR,
+        subfolder="vae"
+    ).to(DEVICE).eval()
+
+def save_frames_to_video(frame_dir, output_path, fps=8):
+    print("[INFO] Saving frames to video...")
+    frames = sorted([f for f in os.listdir(frame_dir) if f.endswith(".png")])
+    images = [imageio.v2.imread(os.path.join(frame_dir, f)) for f in frames]
+    imageio.mimsave(output_path, images, fps=fps)
+    print(f"[INFO] Video saved: {output_path}")
+
+# -------- MAIN --------
 def generate_video(prompt, output_path="output.mp4", num_frames=16):
     os.makedirs(OUTPUT_FRAMES_DIR, exist_ok=True)
-    print(f"[INFO] Prompt: '{prompt}'")
+    print(f"[INFO] Generating video for prompt: '{prompt}'")
+
     text_emb = load_text_embedding(prompt)
-
-    print("[INFO] Loading VAE & UNet...")
-
-    # Load VAE
-    vae = torch.load(VAE_PATH, map_location=DEVICE)
-
-    # Load UNet config from local file
-    with open(UNET_CONFIG_PATH, "r") as f:
-        unet_config = json.load(f)
-    unet = UNet2DConditionModel.from_config(unet_config).to(DEVICE)
-    unet.load_state_dict(load_file(UNET_WEIGHTS_PATH))
-
-    # Load DDIM Scheduler
+    unet = load_unet()
+    vae = load_vae()
     scheduler = DDIMScheduler.from_pretrained("CompVis/stable-diffusion-v1-4", subfolder="scheduler")
     scheduler.set_timesteps(25)
 
@@ -65,7 +61,11 @@ def generate_video(prompt, output_path="output.mp4", num_frames=16):
         latents = torch.randn((1, 4, 64, 64)).to(DEVICE)
         for t in scheduler.timesteps:
             with torch.no_grad():
-                noise_pred = unet(latents, t, encoder_hidden_states=text_emb).sample
+                noise_pred = unet(
+                    sample=latents,
+                    timestep=t,
+                    encoder_hidden_states=text_emb
+                ).sample
             latents = scheduler.step(noise_pred, t, latents).prev_sample
 
         with torch.no_grad():
@@ -74,12 +74,12 @@ def generate_video(prompt, output_path="output.mp4", num_frames=16):
 
     save_frames_to_video(OUTPUT_FRAMES_DIR, output_path)
 
-# ----------- CLI -----------
+# -------- CLI --------
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--prompt", type=str, required=True)
-    parser.add_argument("--output", type=str, default="output.mp4")
-    parser.add_argument("--frames", type=int, default=16)
+    parser.add_argument("--prompt", type=str, required=True, help="Prompt text")
+    parser.add_argument("--output", type=str, default="output.mp4", help="Output video filename")
+    parser.add_argument("--frames", type=int, default=16, help="Number of frames to generate")
     args = parser.parse_args()
 
     generate_video(args.prompt, args.output, args.frames)

@@ -8,7 +8,7 @@ safetensors
 accelerate
 huggingface_hub
 tqdm
-numpy
+numpy==1.26.4
 Pillow
 
 
