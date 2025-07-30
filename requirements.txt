@@ -17,8 +17,7 @@ opencv-python>=4.9.0.80
 tokenizers>=0.20.3
 easydict
 ftfy
-dashscope
-flash_attn
+
 
 # ───── FastAPI & Server ─────
 fastapi
