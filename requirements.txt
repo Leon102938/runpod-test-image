@@ -14,7 +14,7 @@ Pillow
 
 # ───── Wan 2.2 ─────
 opencv-python>=4.9.0.80
-tokenizers>=0.20.3
+tokenizers==0.19.1
 easydict
 ftfy
 
