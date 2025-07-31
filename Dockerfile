@@ -11,6 +11,14 @@ RUN apt-get update && apt-get install -y software-properties-common && \
     libsentencepiece-dev ffmpeg && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+
+ENV HF_HOME=/workspace/.cache/huggingface
+ENV TRANSFORMERS_CACHE=$HF_HOME/transformers
+ENV HF_HUB_CACHE=$HF_HOME/hub
+
+
+
+
 # 🐍 Python + Pip
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 && \
     ln -sf /usr/bin/python3.11 /usr/bin/python && \

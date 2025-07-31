@@ -2,7 +2,7 @@
 torch==2.4.0
 torchvision==0.19.0
 torchaudio==2.4.0
-transformers==4.40.2
+transformers==4.29.2
 diffusers==0.27.2
 safetensors
 accelerate==0.28.0

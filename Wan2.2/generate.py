@@ -2,6 +2,7 @@
 import argparse
 import logging
 import os
+HF_HOME = os.getenv("HF_HOME", "/workspace/.cache/huggingface")
 import sys
 import warnings
 from datetime import datetime
