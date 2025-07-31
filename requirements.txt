@@ -2,8 +2,8 @@
 torch==2.4.0
 torchvision==0.19.0
 torchaudio==2.4.0
-transformers
-diffusers
+transformers==4.40.2
+diffusers==0.27.2
 safetensors
 accelerate
 huggingface_hub
@@ -18,11 +18,19 @@ tokenizers>=0.20.3
 easydict
 ftfy
 
+# ───── Neu und Nötig ─────
+einops
+dashscope
+protobuf==3.20.3
+
+
+
+
 
 # ───── FastAPI & Server ─────
-fastapi
+fastapi==0.95.2
 uvicorn
-pydantic
+pydantic==1.10.13
 python-dotenv
 
 # ───── Jupyter für Tests ─────

@@ -15,10 +15,33 @@ import torch.distributed as dist
 from PIL import Image
 
 import wan
-from wan.configs import MAX_AREA_CONFIGS, SIZE_CONFIGS, SUPPORTED_SIZES, WAN_CONFIGS
+from wan.configs.wan_ti2v_5B import ti2v_5B
+
+WAN_CONFIGS = {"ti2v-5B": ti2v_5B}
+
 from wan.distributed.util import init_distributed_group
 from wan.utils.prompt_extend import DashScopePromptExpander, QwenPromptExpander
 from wan.utils.utils import save_video, str2bool
+
+
+SUPPORTED_SIZES = {
+    "ti2v-5B": ["1280*704", "512*320", "1024*640"]
+}
+SIZE_CONFIGS = {
+    "1280*704": (1280, 704),
+    "512*320": (512, 320),
+    "1024*640": (1024, 640)
+}
+
+
+MAX_AREA_CONFIGS = {
+    "1280*704": 1280 * 704,
+    "512*320": 512 * 320,
+    "1024*640": 1024 * 640
+}
+
+
+
 
 EXAMPLE_PROMPT = {
     "t2v-A14B": {
@@ -388,6 +411,24 @@ def generate(args):
             suffix = '.mp4'
             args.save_file = f"{args.task}_{args.size.replace('*','x') if sys.platform=='win32' else args.size}_{args.ulysses_size}_{formatted_prompt}_{formatted_time}" + suffix
 
+
+
+        # 🟢 Video-Sampling startet HIER
+        video = wan_ti2v.infer(
+            prompt=args.prompt,
+            image=img,
+            max_area=MAX_AREA_CONFIGS[args.size],
+            frame_num=args.frame_num,
+            shift=args.sample_shift,
+            sample_solver=args.sample_solver,
+            sampling_steps=args.sample_steps,
+            guide_scale=args.sample_guide_scale,
+            seed=args.base_seed,
+            offload_model=args.offload_model
+     )
+
+
+        
         logging.info(f"Saving generated video to {args.save_file}")
         save_video(
             tensor=video[None],
