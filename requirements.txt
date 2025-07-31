@@ -5,8 +5,8 @@ torchaudio==2.4.0
 transformers==4.40.2
 diffusers==0.27.2
 safetensors
-accelerate
-huggingface_hub
+accelerate==0.28.0
+huggingface_hub==0.16.4
 tqdm
 numpy==1.26.4
 Pillow
