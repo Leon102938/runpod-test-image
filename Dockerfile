@@ -1,5 +1,5 @@
 # ⚙️ CUDA 12.1.1 + cuDNN8 + Ubuntu 20.04
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu20.04
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu20.04
 
 # 🧰 Tools & Python 3.11
 RUN apt-get update && apt-get install -y software-properties-common && \
@@ -28,8 +28,8 @@ RUN pip install --upgrade pip setuptools wheel packaging
 
 # 🧠 PyTorch CUDA 12.1
 RUN pip install --no-cache-dir \
-    torch==2.2.2 \
-    torchvision==0.17.2 \
+    torch==2.4.0 \
+    torchvision==0.19.0 \
     torchaudio==2.2.2 \
     networkx==3.2.1 \
     --index-url https://download.pytorch.org/whl/cu121
