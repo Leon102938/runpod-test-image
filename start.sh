@@ -4,7 +4,7 @@
 source ./tools.config
 
 
-# 🌍 BASE_URL automatisch setzen...
+# 🌍 BASE_URL automatisch setzen
 echo "🌐 Ermittle dynamische RunPod Proxy-URL..."
 
 POD_ID=${RUNPOD_POD_ID}
