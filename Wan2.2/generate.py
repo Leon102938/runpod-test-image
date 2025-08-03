@@ -107,6 +107,9 @@ def generate(args):
         prompt_str = args.prompt.replace(" ", "_")[:50]
         args.save_file = f"wan_ti2v_{prompt_str}_{timestamp}.mp4"
 
+    print(f"[DEBUG] video shape: {video.shape}, dtype: {video.dtype}, min: {video.min().item():.4f}, max: {video.max().item():.4f}")
+
+    
     logging.info(f"💾 Saving video to {args.save_file}")
     save_video(video[None], args.save_file, fps=cfg.sample_fps, nrow=1, normalize=True, value_range=(-1, 1))
 
