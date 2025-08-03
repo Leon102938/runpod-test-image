@@ -320,17 +320,19 @@ class FlowUniPCMultistepScheduler(SchedulerMixin, ConfigMixin):
         if self.predict_x0:
             if self.config.prediction_type == "flow_prediction":
                 sigma_t = self.sigmas[self.step_index]
-                x0_pred = sample - sigma_t * model_output
-            else:
-                raise ValueError(
-                    f"prediction_type given as {self.config.prediction_type} must be one of `epsilon`, `sample`,"
-                    " `v_prediction` or `flow_prediction` for the UniPCMultistepScheduler."
-                )
+
+            
+            # ⬇️ PATCH: Framezahl angleichen
+            if model_output.shape[1] != sample.shape[1]:
+                model_output = model_output.repeat(1, sample.shape[1] // model_output.shape[1], 1, 1, 1)
+
+            x0_pred = sample - sigma_t * model_output
 
             if self.config.thresholding:
                 x0_pred = self._threshold_sample(x0_pred)
 
             return x0_pred
+
         else:
             if self.config.prediction_type == "flow_prediction":
                 sigma_t = self.sigmas[self.step_index]
