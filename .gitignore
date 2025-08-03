@@ -36,3 +36,4 @@ weights/
 
 # Git
 .gitkeep
+wheel_flashattn/*.whl
