@@ -1,5 +1,5 @@
-# ⚙️ CUDA 12.4.1 + cuDNN8 + Ubuntu 20.04
-FROM nvidia/cuda:12.4.1-cudnn8-devel-ubuntu20.04
+# ⚙️ CUDA 12.4.0 + cuDNN8 + Ubuntu 20.04
+FROM nvidia/cuda:12.4.0-cudnn8-devel-ubuntu20.04
 
 # 🚫 Verhindert interaktive Prompts (z. B. tzdata)
 ENV DEBIAN_FRONTEND=noninteractive
