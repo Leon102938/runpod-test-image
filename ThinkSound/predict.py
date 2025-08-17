@@ -1,163 +1,132 @@
-from prefigure.prefigure import get_all_args, push_wandb_config
-import json
-import os
-import re
-import torch
-import torchaudio
-from lightning.pytorch import seed_everything
-import random
+#!/usr/bin/env python3
+import argparse, json, os, torch, torchaudio, numpy as np
 from datetime import datetime
-import numpy as np
-from ThinkSound.models import create_model_from_config
-from ThinkSound.models.utils import load_ckpt_state_dict, remove_weight_norm_from_model
-from ThinkSound.inference.sampling import sample, sample_discrete_euler
+from lightning.pytorch import seed_everything
 from pathlib import Path
+from ThinkSound.models import create_model_from_config
+from ThinkSound.models.utils import load_ckpt_state_dict
+from ThinkSound.inference.sampling import sample, sample_discrete_euler
 
+def parse_args():
+    p = argparse.ArgumentParser(prog="ThinkSound predict (clean)")
+    p.add_argument("--config", default="ThinkSound/configs/model_configs/thinksound.json")
+    p.add_argument("--ckpt", required=True)
+    p.add_argument("--vae", required=True)
+    p.add_argument("--synchformer", default="")
+    p.add_argument("--results-dir", default="results")
+    p.add_argument("--features_dir", default="results/features")
+    p.add_argument("--duration-sec", type=float, default=7)
+    p.add_argument("--title", default="")
+    p.add_argument("--cot", default="")
+    p.add_argument("--half", action="store_true")
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--compile", action="store_true")
+    p.add_argument("--test_batch_size", type=int, default=1)
+    return p.parse_args()
 
+def load_npz_as_metadata(npz_path, duration):
+    import numpy as np, torch, os
+    from pathlib import Path
+    if not os.path.exists(npz_path):
+        raise FileNotFoundError(f"NPZ not found: {npz_path}")
+    d = np.load(npz_path, allow_pickle=True)
+    info = {k: d[k] for k in d.files}
+    # Nur numerische Arrays -> Tensor; Strings/Objekte bleiben Python
+    for k, v in list(info.items()):
+        if isinstance(v, np.ndarray):
+            if v.dtype.kind in "iufb":       # int/uint/float/bool
+                info[k] = torch.from_numpy(v)
+            else:                             # string/object etc.
+                info[k] = v.tolist()
+                if isinstance(info[k], list) and len(info[k]) == 1:
+                    info[k] = info[k][0]
+    # Sicherstellen, dass Textfelder Strings sind
+    for tk in ("id", "caption", "caption_cot"):
+        if tk in info and isinstance(info[tk], (list, tuple)):
+            info[tk] = info[tk][0] if info[tk] else ""
+        if tk in info and not isinstance(info[tk], str):
+            info[tk] = str(info[tk])
+    latent_len = round(44100/64/32*duration)
+    audio = torch.zeros((1, 64, latent_len), dtype=torch.float32)
+    info["video_exist"] = torch.tensor(True)
+    return audio, info
 
+@torch.no_grad()
 def predict_step(diffusion, batch, diffusion_objective, device='cuda:0'):
     diffusion = diffusion.to(device)
-
-    reals, metadata = batch
-    ids = [item['id'] for item in metadata]
-    batch_size, length = reals.shape[0], reals.shape[2]
-    print(f"Predicting {batch_size} samples with length {length} for ids: {ids}")
+    reals, metadata_list = batch
     with torch.amp.autocast('cuda'):
-        conditioning = diffusion.conditioner(metadata, device)
-    
-    video_exist = torch.stack([item['video_exist'] for item in metadata],dim=0)
+        conditioning = diffusion.conditioner(metadata_list, device)
+    video_exist = torch.stack([m['video_exist'] for m in metadata_list], dim=0)
     conditioning['metaclip_features'][~video_exist] = diffusion.model.model.empty_clip_feat
-    conditioning['sync_features'][~video_exist] = diffusion.model.model.empty_sync_feat
-
+    conditioning['sync_features'][~video_exist]     = diffusion.model.model.empty_sync_feat
     cond_inputs = diffusion.get_conditioning_inputs(conditioning)
-    if batch_size > 1:
-        noise_list = []
-        for _ in range(batch_size):
-            noise_1 = torch.randn([1, diffusion.io_channels, length]).to(device)  # 每次生成推进RNG状态
-            noise_list.append(noise_1)
-        noise = torch.cat(noise_list, dim=0)
-    else:
-        noise = torch.randn([batch_size, diffusion.io_channels, length]).to(device)
-
+    B = reals.shape[0]; L = reals.shape[2]
+    noise = torch.randn([B, diffusion.io_channels, L], device=device)
     with torch.amp.autocast('cuda'):
-
         model = diffusion.model
         if diffusion_objective == "v":
             fakes = sample(model, noise, 24, 0, **cond_inputs, cfg_scale=5, batch_cfg=True)
-        elif diffusion_objective == "rectified_flow":
-            import time
-            start_time = time.time()
+        else:
             fakes = sample_discrete_euler(model, noise, 24, **cond_inputs, cfg_scale=5, batch_cfg=True)
-            end_time = time.time()
-            execution_time = end_time - start_time
-            print(f"执行时间: {execution_time:.2f} 秒")
         if diffusion.pretransform is not None:
             fakes = diffusion.pretransform.decode(fakes)
-
-    audios = fakes.to(torch.float32).div(torch.max(torch.abs(fakes))).clamp(-1, 1).mul(32767).to(torch.int16).cpu()
-    return audios
-
-
-
-def load_file(filename, info, latent_length):
-    # try:
-    npz_file = filename
-    if os.path.exists(npz_file): 
-        # print(filename)
-        npz_data = np.load(npz_file,allow_pickle=True)
-        data = {key: npz_data[key] for key in npz_data.files}
-        # print("data.keys()",data.keys())
-        for key in data.keys():
-            if isinstance(data[key], np.ndarray) and np.issubdtype(data[key].dtype, np.number):
-                data[key] = torch.from_numpy(data[key])
-    else:
-        raise ValueError(f'error load file: {filename}')
-    info.update(data)
-    audio = torch.zeros((1, 64, latent_length), dtype=torch.float32)
-    info['video_exist'] = torch.tensor(True)
-    # except:
-    #     print(f'error load file: {filename}')
-    return audio, info['metaclip_features']
-
-def load(filename,duration):
-    assert os.path.exists(filename)
-    info = {}
-    audio, video = load_file(filename, info, round(44100/64/32*duration))
-    info["path"] = filename
-
-    info['id'] = Path(filename).stem
-    info["relpath"] = 'demo.npz'
-
-    return (audio, info)
+    audios = fakes.to(torch.float32)
+    m = torch.max(torch.abs(audios))
+    if m > 0: audios = audios / m
+    return (audios.clamp(-1,1)*32767).to(torch.int16).cpu()
 
 def main():
-
-    args = get_all_args()
-
-    if (args.save_dir == ''):
-        args.save_dir=args.results_dir
-
-
-    seed = args.seed
-
-    # Set a different seed for each process if using SLURM
-    if os.environ.get("SLURM_PROCID") is not None:
-        seed += int(os.environ.get("SLURM_PROCID"))
-
-    # random.seed(seed)
-    # torch.manual_seed(seed)
-    seed_everything(seed, workers=True)
-
-    #Get JSON config from args.model_config
-    if args.model_config == '':
-        args.model_config = "ThinkSound/configs/model_configs/thinksound.json"
-    with open(args.model_config) as f:
+    args = parse_args()
+    seed_everything(args.seed, workers=True)
+    with open(args.config, "r", encoding="utf-8") as f:
         model_config = json.load(f)
-
-
-    duration=(float)(args.duration_sec)
-    
+    duration = float(args.duration_sec)
     model_config["sample_size"] = duration * model_config["sample_rate"]
-    model_config["model"]["diffusion"]["config"]["sync_seq_len"] = 24*int(duration)
-    model_config["model"]["diffusion"]["config"]["clip_seq_len"] = 8*int(duration)
+    model_config["model"]["diffusion"]["config"]["sync_seq_len"]   = 24*int(duration)
+    model_config["model"]["diffusion"]["config"]["clip_seq_len"]   = 8*int(duration)
     model_config["model"]["diffusion"]["config"]["latent_seq_len"] = round(44100/64/32*duration)
+    diffusion = create_model_from_config(model_config)
+    if args.compile: diffusion = torch.compile(diffusion)
 
-    model = create_model_from_config(model_config)
+    # Haupt-Checkpoint robust
+    ckpt = torch.load(args.ckpt, map_location="cpu")
+    if isinstance(ckpt, dict) and "state_dict" in ckpt: ckpt = ckpt["state_dict"]
+    if any(k.startswith("module.") for k in ckpt): ckpt = { (k[7:] if k.startswith("module.") else k): v for k,v in ckpt.items() }
+    if any(k.startswith("model.") for k in ckpt) and not any(k.startswith("model.model.") for k in ckpt):
+        ckpt = { ("model.model."+k[len("model."):]) if k.startswith("model.") else k : v for k,v in ckpt.items() }
+    missing, unexpected = diffusion.load_state_dict(ckpt, strict=False)
+    print(f"load_state_dict -> missing:{len(missing)} unexpected:{len(unexpected)}")
 
-    ## speed by torch.compile
-    if args.compile:
-        model = torch.compile(model)
-        
+    # VAE
+    vae_state = load_ckpt_state_dict(args.vae, prefix='autoencoder.')
+    diffusion.pretransform.load_state_dict(vae_state, strict=False)
 
-    model.load_state_dict(torch.load(args.ckpt_dir))
+    # Features
+    npz_path = os.path.join(args.features_dir, "demo.npz")
+    if not os.path.exists(npz_path):
+        cands = list(Path(args.features_dir).glob("*.npz"))
+        if not cands: raise FileNotFoundError(f"No .npz found in {args.features_dir}")
+        npz_path = str(cands[0])
 
+    audio, meta = load_npz_as_metadata(npz_path, duration)
+    for k,v in list(meta.items()):
+        if isinstance(v, torch.Tensor): meta[k] = v.to('cuda:0')
 
-    load_vae_state = load_ckpt_state_dict(args.pretransform_ckpt_path, prefix='autoencoder.') 
-    model.pretransform.load_state_dict(load_vae_state)
+    aud = predict_step(diffusion, batch=[audio.to('cuda:0'), (meta,)],
+                       diffusion_objective=model_config["model"]["diffusion"]["diffusion_objective"],
+                       device='cuda:0')
 
-    audio,meta=load(os.path.join(args.results_dir, "demo.npz") , duration)
-    
-    for k, v in meta.items():
-        if isinstance(v, torch.Tensor):
-            meta[k] = v.to('cuda:0')
+    os.makedirs(args.results_dir, exist_ok=True)
+    wav1 = os.path.join(args.results_dir, "demo.wav")
+    torchaudio.save(wav1, aud[0], 44100)
+    print("Wrote:", wav1)
+    mmdd = datetime.now().strftime("%m%d")
+    dated_dir = os.path.join(args.results_dir, f"{mmdd}_batch_size{args.test_batch_size}")
+    os.makedirs(dated_dir, exist_ok=True)
+    wav2 = os.path.join(dated_dir, "demo.wav")
+    torchaudio.save(wav2, aud[0], 44100)
+    print("Wrote:", wav2)
 
-    audio=predict_step(model, 
-        batch=[audio,(meta,)],
-        diffusion_objective=model_config["model"]["diffusion"]["diffusion_objective"], 
-        device='cuda:0'
-    )
-
-    current_date = datetime.now()
-    formatted_date = current_date.strftime('%m%d')
-    
-    audio_dir = os.path.join(args.save_dir,f'{formatted_date}_batch_size'+str(args.test_batch_size))
-    os.makedirs(audio_dir,exist_ok=True)
-    torchaudio.save(os.path.join(audio_dir,"demo.wav"), audio[0], 44100)
-    
-
-    #trainer.predict(training_wrapper, dm, return_predictions=False)
-
-    
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
