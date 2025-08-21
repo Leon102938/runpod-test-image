@@ -30,17 +30,18 @@ easydict==1.10
 opencv-python-headless==4.9.0.80
 
 # ThinkSound / Training
-omegaconf==2.3.0
-lightning==2.3.0
+omegaconf
+lightning
 prefigure==0.0.4
 alias-free-torch==0.0.6     # oder auskommentieren, falls nicht gebraucht
 vector-quantize-pytorch==1.14.24
 networkx==3.2.1
-einops==0.7.0
+einops
 protobuf==3.20.3
-python-dotenv==1.0.1
+python-dotenv
 
 # API / Server / Dev
-fastapi==0.95.2
-uvicorn[standard]==0.30.6
-jupyterlab==4.2.4
+fastapi
+uvicorn
+jupyterlab
+pydantic
