@@ -1,11 +1,11 @@
-# --- Core (no torch here) ---
+# --- Core (kein torch hier!) ---
 numpy==1.26.4
 pandas==2.2.2
 scipy==1.11.4
 pillow==10.3.0
 tqdm
 
-# Hugging Face stack
+# HF-Stack
 transformers==4.43.4
 tokenizers==0.15.2
 accelerate==0.32.1
@@ -14,7 +14,7 @@ safetensors==0.4.3
 huggingface_hub==0.24.5
 sentencepiece==0.2.0
 
-# Audio / media
+# Audio / Media
 librosa==0.10.2.post1
 soundfile==0.12.1
 moviepy==1.0.3
@@ -25,30 +25,27 @@ imageio-ffmpeg==0.4.9
 open-clip-torch==2.24.0
 ftfy==6.1.1
 
-# WAN 2.2 deps
+# WAN 2.2
 easydict==1.10
 opencv-python-headless==4.9.0.80
 
-# ThinkSound extras
+# ThinkSound / Training
 omegaconf==2.3.0
 lightning==2.3.0
 prefigure==0.0.4
-alias-free-torch==0.1.2
+alias-free-torch==0.0.6     # oder auskommentieren, falls nicht gebraucht
 vector-quantize-pytorch==1.14.24
 networkx==3.2.1
-
-# New / misc
 einops==0.7.0
-dashscope
 protobuf==3.20.3
 python-dotenv==1.0.1
 
-# API / Server
+# API / Server / Dev
 fastapi==0.95.2
 uvicorn[standard]==0.30.6
 jupyterlab==4.2.4
 
-# VCS packages (optional: pin mit @<SHA>)
+# VCS (optional: auf Commit pinnen mit @<SHA>)
 git+https://github.com/openai/CLIP.git#egg=clip
 git+https://github.com/crowsonkb/k-diffusion.git#egg=k-diffusion
 git+https://github.com/descriptinc/descript-audio-codec#egg=dac
