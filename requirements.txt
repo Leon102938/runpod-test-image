@@ -46,6 +46,6 @@ uvicorn[standard]==0.30.6
 jupyterlab==4.2.4
 
 # VCS (optional: auf Commit pinnen mit @<SHA>)
-git+https://github.com/openai/CLIP.git#egg=clip
-git+https://github.com/crowsonkb/k-diffusion.git#egg=k-diffusion
-git+https://github.com/descriptinc/descript-audio-codec#egg=dac
+clip @ git+https://github.com/openai/CLIP.git@main
+k-diffusion @ git+https://github.com/crowsonkb/k-diffusion.git@master
+descript-audio-codec==1.0.0
