@@ -37,7 +37,7 @@ alias-free-torch==0.0.6     # oder auskommentieren, falls nicht gebraucht
 vector-quantize-pytorch==1.14.24
 networkx==3.2.1
 einops
-protobuf==3.20.3
+protobuf
 python-dotenv
 
 # API / Server / Dev
