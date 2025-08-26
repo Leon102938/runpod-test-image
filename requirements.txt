@@ -45,3 +45,15 @@ fastapi
 uvicorn
 jupyterlab
 pydantic
+
+
+# ───── Neu und Nötig (wan)─────
+dashscope
+
+
+
+
+# Git-Repos direkt installieren
+git+https://github.com/descriptinc/descript-audio-codec.git@main
+git+https://github.com/crowsonkb/k-diffusion.git@master
+git+https://github.com/openai/CLIP.git

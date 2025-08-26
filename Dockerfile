@@ -44,6 +44,7 @@ ENV HF_HOME=/workspace/.cache/huggingface \
 # 📁 Projekt
 WORKDIR /workspace
 COPY . .
+RUN chmod +x /workspace/DW/run.py
 RUN chmod +x /workspace/start.sh
 
 EXPOSE 8000 8888
