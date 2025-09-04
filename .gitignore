@@ -26,6 +26,7 @@ workspace/tmp/
 *.pid
 
 # Models & große Files (wenn du willst)
+models/
 checkpoints/
 weights/
 *.safetensors
@@ -36,4 +37,3 @@ weights/
 
 # Git
 .gitkeep
-wheel_flashattn/*.whl
