@@ -4,10 +4,24 @@
 source ./tools.config
 
 
-# ============ 🔧 PYTHONPATH ============ 
+# 🌍 BASE_URL automatisch setzen
+echo "🌐 Ermittle dynamische RunPod Proxy-URL..."
+
+POD_ID=${RUNPOD_POD_ID}
+
+if [ -z "$POD_ID" ]; then
+    echo "❌ FEHLER: RUNPOD_POD_ID nicht gesetzt – .env nicht geschrieben!"
+else
+    BASE_URL="https://${POD_ID}-8000.proxy.runpod.net"
+    export BASE_URL
+    echo "BASE_URL=$BASE_URL" > /workspace/.env
+    echo "✅ BASE_URL erfolgreich gesetzt: $BASE_URL"
+fi
+
+
+
+# ============ 🔧 PYTHONPATH ============
 export PYTHONPATH="$PYTHONPATH:/workspace/app"
-
-
 
 # ============ 🔷 JUPYTERLAB THEME ============
 mkdir -p /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension
@@ -29,12 +43,14 @@ if [ "$JUPYTER" == "on" ]; then
     > /workspace/jupyter.log 2>&1 &
 fi
 
-# ============ 🔷 FASTAPI (Port 7860) ============
+# ============ 🔷 FASTAPI (Port 8000) ============
 if [ "$FASTAPI" == "on" ]; then
-  echo "🚀 Starte zentrale FastAPI (Port 7860)..."
+  echo "🚀 Starte zentrale FastAPI (Port 8000)..."
   nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > /workspace/fastapi.log 2>&1 &
 fi
 
 # ============ ✅ ABSCHLUSS ============
 echo "✅ Dienste wurden gestartet: Modelle geladen, JupyterLab und/oder FastAPI aktiv (je nach config)"
 tail -f /dev/null
+
+

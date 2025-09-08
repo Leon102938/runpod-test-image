@@ -1,37 +1,59 @@
-# ───── FastAPI & Core ─────
+# --- Core (kein torch hier!) ---
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.11.4
+pillow==10.3.0
+tqdm
+
+# HF-Stack
+transformers==4.43.4
+tokenizers==0.19.1
+accelerate==0.32.1
+diffusers==0.16.1
+safetensors==0.4.3
+huggingface_hub==0.24.5
+sentencepiece==0.2.0
+
+# Audio / Media
+librosa==0.10.2.post1
+soundfile==0.12.1
+moviepy==1.0.3
+imageio==2.34.1
+imageio-ffmpeg==0.4.9
+
+# CLIP / open-clip
+open-clip-torch==2.24.0
+ftfy==6.1.1
+
+# WAN 2.2
+easydict==1.10
+opencv-python-headless==4.9.0.80
+
+# ThinkSound / Training
+omegaconf
+lightning
+prefigure==0.0.4
+alias-free-torch==0.0.6     # oder auskommentieren, falls nicht gebraucht
+vector-quantize-pytorch==1.14.24
+networkx==3.2.1
+einops
+protobuf
+python-dotenv
+
+# API / Server / Dev
 fastapi
 uvicorn
+jupyterlab
 pydantic
 
-# ───── Jupyter für Tests ─────
-jupyterlab
 
-# ───── Bild-/Video-Modelle ─────
-numpy==1.26.4
-torch==2.2.0
-diffusers==0.25.0
-transformers==4.38.0
-huggingface_hub==0.23.3
-pillow
-omegaconf
-safetensors
+# ───── Neu und Nötig (wan)─────
+dashscope
+modelscope
 
 
 
-# ───── LoRA / ControlNet / SDXL Support (Optional, aber ready) ─────
-accelerate                  # nötig für viele diffusers-pipelines
-xformers                    # optional, für RAM-Optimierung
-einops                      # genutzt von manchen Modelle
-
-
-
-# ───── Audio/Voice (wenn geplant) ─────
-scipy               # für Musikgen & Audio
-librosa             # für Audiobearbeitung
-soundfile           # für Audio-Output
-
-
-# ───── AnimateDiff / img2vid Support ─────
-imageio
-imageio-ffmpeg
-tqdm
+# Git-Repos direkt installieren
+git+https://github.com/descriptinc/descript-audio-codec.git@main
+git+https://github.com/crowsonkb/k-diffusion.git@master
+git+https://github.com/openai/CLIP.git

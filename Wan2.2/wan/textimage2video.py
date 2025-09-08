@@ -100,7 +100,7 @@ class WanTI2V:
             device=self.device)
 
         logging.info(f"Creating WanModel from {checkpoint_dir}")
-        self.model = WanModel()
+        self.model = WanModel.from_pretrained(checkpoint_dir)
         self.model = self._configure_model(
             model=self.model,
             use_sp=use_sp,
@@ -224,15 +224,7 @@ class WanTI2V:
                 seed=seed,
                 offload_model=offload_model)
         # t2v
-
-        import logging
-        logging.info("[WAN] Starting Text-to-Video generation...")
-
-        logging.info(f"[WAN] Prompt: {input_prompt}")
-        logging.info(f"[WAN] Resolution: {size[0]}x{size[1]}, Frames: {frame_num}, Steps: {sampling_steps}")
-        logging.info(f"[WAN] Model offload: {offload_model}, Guide scale: {guide_scale}, Seed: {seed}")
-
-        result = self.t2v(
+        return self.t2v(
             input_prompt=input_prompt,
             size=size,
             frame_num=frame_num,
@@ -244,12 +236,6 @@ class WanTI2V:
             seed=seed,
             offload_model=offload_model)
 
-        logging.info("[WAN] Text-to-Video generation finished.")
-        return result
-
-
-
-    
     def t2v(self,
             input_prompt,
             size=(1280, 704),
@@ -261,12 +247,6 @@ class WanTI2V:
             n_prompt="",
             seed=-1,
             offload_model=True):
-       
-        
-
-        
-        
-        
         r"""
         Generates video frames from text prompt using diffusion process.
 
@@ -539,7 +519,7 @@ class WanTI2V:
 
         # evaluation mode
         with (
-                torch.amp.autocast('cuda', param_dtype=torch.float16),
+                torch.amp.autocast('cuda', dtype=self.param_dtype),
                 torch.no_grad(),
                 no_sync(),
         ):
