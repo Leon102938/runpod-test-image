@@ -1,4 +1,4 @@
-# ✅ CUDA 12.1.1 + cuDNN8 + Ubuntu 22.04 (glibc 2.35) → keine GLIBC_2.32-Probleme
+# ✅ CUDA 12.1.1 + cuDNN8 + Ubuntu 22.04 (glibc 2.35)
 FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -27,48 +27,45 @@ ENV PATH="${VENV}/bin:${PATH}"
 # ---- pip basics ----
 RUN python -m pip install --upgrade pip setuptools wheel
 
-# ---- CUDA env (für Builds) ----
+# ---- CUDA build env ----
 ENV CUDA_HOME=/usr/local/cuda \
     TORCH_CUDA_ARCH_LIST="8.9" \
     MAX_JOBS=8
 
-# ---- HF Caches ----
+# ---- HF caches ----
 ENV HF_HOME=/workspace/.cache/huggingface \
     TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers \
     HF_HUB_CACHE=/workspace/.cache/huggingface/hub
 
-# ---- Torch-Stack (CUDA 12.1) ----
+# ---- Torch stack (CUDA 12.1) ----
 RUN pip install --extra-index-url https://download.pytorch.org/whl/cu121 \
     torch==2.4.0+cu121 torchvision==0.19.0+cu121 torchaudio==2.4.0+cu121
 
-# ---- Scientific core: NumPy < 2 (kompatibel zu SciPy/Numba) ----
+# ---- Scientific core (NumPy < 2) ----
 RUN pip install numpy==1.26.4 scipy==1.11.4 numba==0.61.2 pandas pyarrow
 
-# ---- Diffusion / HF-Ökosystem (API-kompatible Pins) ----
+# ---- Diffusion / HF ecosystem (API-stable pins) ----
 RUN pip install diffusers==0.30.2 peft==0.11.1 accelerate==0.31.0 safetensors>=0.4.4 \
     sentencepiece==0.1.99 protobuf==4.25.3
 
 # transformers + tokenizers (zueinander passend)
-RUN pip install transformers==4.40.2 tokenizers==0.15.2
+RUN pip install transformers==4.40.2 tokenizers==0.19.1
 
-# ---- Media & Utils ----
+# ---- Media & utils ----
 RUN pip install opencv-python imageio[ffmpeg] imageio-ffmpeg decord \
     tqdm easydict ftfy omegaconf hydra-core lightning rich gdown wget GitPython
 
-# ---- FlashAttention: erst Wheel, sonst Fallback Source-Build (2.5.8) ----
+# ---- FlashAttention: zuerst Wheel, sonst Fallback Source-Build ----
 RUN pip install flash-attn==2.5.9 --only-binary=:all: || \
     pip install flash-attn==2.5.8 --no-build-isolation
 
-# ---- Runtime-ENV gegen Tokenizer/Thread-Issues ----
+# ---- Runtime envs ----
 ENV TRANSFORMERS_NO_FAST_TOKENIZER=1 \
     TOKENIZERS_PARALLELISM=false
 
-# ---- Workspace (Repo wird zur Laufzeit gemountet oder hier per COPY eingespielt) ----
+# ---- Workspace ----
 WORKDIR /workspace
-# COPY . .   # falls du das Repo in's Image backen willst, auskommentieren
+# COPY . .   # falls du das Repo ins Image backen willst
 
-# Ports für Notebooks/Services
 EXPOSE 8000 8888
-
-# Default Shell
 CMD ["bash", "start.sh"]
