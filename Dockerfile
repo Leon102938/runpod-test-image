@@ -1,12 +1,12 @@
-# ⚙️ CUDA 12.1.1 + cuDNN8 + Ubuntu 20.04
-FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu20.04
+# ⚙️ CUDA 12.1.1 + cuDNN8 + Ubuntu 22.04 (stabil in 2025)
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1 \
     PYTHONUNBUFFERED=1 \
     TZ=Europe/Berlin
 
-# 🧰 System & PPA (robust für 2025: mit allen Tools, kein KEY.gpg-Direct-Download)
+# 🧰 System + Python 3.11 (deadsnakes auf 22.04 funktioniert)
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
@@ -27,24 +27,22 @@ RUN set -eux; \
     git lfs install; \
     rm -rf /var/lib/apt/lists/*
 
-# 📦 pip für Py3.11 (verlässlich, unabhängig vom System-pip)
+# 📦 pip für Py3.11
 RUN set -eux; \
     curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11; \
     ln -sf /usr/bin/python3.11 /usr/bin/python; \
     ln -sf /usr/local/bin/pip /usr/bin/pip; \
     pip install --upgrade pip setuptools wheel packaging
 
-# 🔥 Torch-Stack (CUDA 12.1) – exakt gepinnt
+# 🔥 Torch-Stack (CUDA 12.1) – exakt wie gewünscht
 RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 \
     torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0
 
-# (Optional, aber oft stabiler für ältere Wheels)
-# RUN pip install --no-cache-dir "numpy<2" "scipy<1.12"
-
 # 📦 Restliche Python-Deps
 COPY requirements.txt /tmp/requirements.txt
-# Falls deine requirements evtl. flash-attn enthalten (was bauen würde), kannst du es so rausfiltern:
-# RUN grep -v -i '^flash[_-]*attn' /tmp/requirements.txt > /tmp/requirements.nofa.txt && mv /tmp/requirements.nofa.txt /tmp/requirements.txt
+# Hinweis: Falls in requirements "flash-attn" steht, baut pip evtl. aus Source.
+#          Dann hier lieber vorab rausfiltern und später ein fertiges Wheel installieren.
+# RUN grep -viE '^flash[_-]*attn' /tmp/requirements.txt > /tmp/req.txt && mv /tmp/req.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # 🔁 HF-Cache
