@@ -1,40 +1,51 @@
-# Use a PyTorch image that includes CUDA and development tools (for nvcc)
-FROM pytorch/pytorch:2.2.2-cuda11.8-cudnn8-devel
+# ⚙️ CUDA 12.1.1 + cuDNN8 + Ubuntu 20.04
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu20.04
 
-# Set environment variables for CUDA
-ENV CUDA_HOME=/usr/local/cuda
-ENV PATH=$CUDA_HOME/bin:$PATH
-ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+ENV DEBIAN_FRONTEND=noninteractive PIP_NO_CACHE_DIR=1 PYTHONUNBUFFERED=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    build-essential \
-    ninja-build \
-    libaio-dev \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+# 🧰 System + Py3.11 (+ nötige Audio-Libs)
+# 1) APT (inkl. libsndfile1)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa -y && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    build-essential python3.11 python3.11-venv python3.11-dev \
+    git git-lfs curl wget unzip tzdata ca-certificates uuid-runtime \
+    ffmpeg libsndfile1 libsentencepiece-dev rclone fuse nano tmux aria2 && \
+    update-ca-certificates && ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata && git lfs install && \
+    rm -rf /var/lib/apt/lists/*
 
-# Clone repository
-RUN git clone https://github.com/Wan-Video/Wan2.2.git .
+# 2) pip für Py3.11
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 && \
+    ln -sf /usr/bin/python3.11 /usr/bin/python && \
+    ln -sf /usr/local/bin/pip /usr/bin/pip && \
+    pip install --upgrade pip setuptools wheel packaging
 
-# Upgrade pip and setuptools to latest
-RUN pip install --upgrade pip setuptools wheel
+# 3) Torch (cu121) separat (bleibt gecached)
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 \
+    torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0
 
-# Install requirements except flash_attn
-RUN grep -v "flash_attn" requirements.txt > requirements_temp.txt && \
-    pip install --no-cache-dir -r requirements_temp.txt
 
-RUN pip install --upgrade typing-extensions
-# Install flash-attn (MUST be after CUDA is set)
-RUN pip install flash-attn --no-build-isolation
 
-# Install decord and librosa
-RUN pip install decord librosa
 
-# Set work directory (optional)
+# 📦 Restliche Python-Deps
+# 4) Rest über requirements.txt (einmal!)
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+
+
+# 🔁 HF-Cache (einmalig)
+ENV HF_HOME=/workspace/.cache/huggingface \
+    TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers \
+    HF_HUB_CACHE=/workspace/.cache/huggingface/hub
+
+# 📁 Projekt
 WORKDIR /workspace
-
+COPY . .
+RUN chmod +x /workspace/DW/run.py
+RUN chmod +x /workspace/start.sh
 
 EXPOSE 8000 8888
 CMD ["bash", "start.sh"]
