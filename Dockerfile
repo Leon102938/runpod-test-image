@@ -30,15 +30,7 @@ RUN curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
 # Optional: Wenn du trotzdem explizit sicherstellen willst:
 # RUN [ -e /usr/local/bin/pip3 ] || ln -s /usr/local/bin/pip /usr/local/bin/pip3
 
-# --- PyTorch 2.4.0 für CUDA 12.1 (cu121 Index) --------------------------------
-RUN python -m pip install --no-cache-dir \
-      --index-url https://download.pytorch.org/whl/cu121 \
 
-
-# --- HF-Caches ----------------------------------------------------------------
-ENV HF_HOME=/workspace/.cache/huggingface \
-    TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers \
-    HF_HUB_CACHE=/workspace/.cache/huggingface/hub
 
 
 WORKDIR /workspace
