@@ -1,66 +1,40 @@
-# ⚙️ CUDA 12.1.1 + cuDNN8 + Ubuntu 22.04 (stabil in 2025)
-FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
+# Use a PyTorch image that includes CUDA and development tools (for nvcc)
+FROM pytorch/pytorch:2.2.2-cuda11.8-cudnn8-devel
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    PIP_NO_CACHE_DIR=1 \
-    PYTHONUNBUFFERED=1 \
-    TZ=Europe/Berlin
+# Set environment variables for CUDA
+ENV CUDA_HOME=/usr/local/cuda
+ENV PATH=$CUDA_HOME/bin:$PATH
+ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
-# 🧰 System + Python 3.11 (deadsnakes auf 22.04 funktioniert)
-RUN set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
-        software-properties-common \
-        gnupg2 dirmngr lsb-release \
-        curl ca-certificates tzdata; \
-    update-ca-certificates; \
-    ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime; \
-    dpkg-reconfigure -f noninteractive tzdata; \
-    add-apt-repository -y ppa:deadsnakes/ppa; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
-        build-essential \
-        python3.11 python3.11-venv python3.11-dev python3.11-distutils \
-        git git-lfs wget unzip uuid-runtime \
-        ffmpeg libsndfile1 libsentencepiece-dev \
-        rclone fuse nano tmux aria2; \
-    git lfs install; \
-    rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    ninja-build \
+    libaio-dev \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
-# 📦 pip für Py3.11
-RUN set -eux; \
-    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11; \
-    ln -sf /usr/bin/python3.11 /usr/bin/python; \
-    ln -sf /usr/local/bin/pip /usr/bin/pip; \
-    pip install --upgrade pip setuptools wheel packaging
+# Clone repository
+RUN git clone https://github.com/Wan-Video/Wan2.2.git .
 
-# 🔥 Torch-Stack (CUDA 12.1) – exakt wie gewünscht
-RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 \
-    torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0
+# Upgrade pip and setuptools to latest
+RUN pip install --upgrade pip setuptools wheel
 
-# 📦 Restliche Python-Deps
-COPY requirements.txt /tmp/requirements.txt
-# Hinweis: Falls in requirements "flash-attn" steht, baut pip evtl. aus Source.
-#          Dann hier lieber vorab rausfiltern und später ein fertiges Wheel installieren.
-# RUN grep -viE '^flash[_-]*attn' /tmp/requirements.txt > /tmp/req.txt && mv /tmp/req.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+# Install requirements except flash_attn
+RUN grep -v "flash_attn" requirements.txt > requirements_temp.txt && \
+    pip install --no-cache-dir -r requirements_temp.txt
 
-# 🔁 HF-Cache
-ENV HF_HOME=/workspace/.cache/huggingface \
-    TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers \
-    HF_HUB_CACHE=/workspace/.cache/huggingface/hub
+RUN pip install --upgrade typing-extensions
+# Install flash-attn (MUST be after CUDA is set)
+RUN pip install flash-attn --no-build-isolation
 
-# 🔧 Anti-Freeze / Memory-Fragmentation Tweaks (optional, schadet nicht)
-ENV PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True,max_split_size_mb:128" \
-    TOKENIZERS_PARALLELISM=false \
-    TRANSFORMERS_NO_FAST_TOKENIZER=1 \
-    OMP_NUM_THREADS=1
+# Install decord and librosa
+RUN pip install decord librosa
 
-# 📁 Projekt
+# Set work directory (optional)
 WORKDIR /workspace
-COPY . .
-RUN chmod +x /workspace/DW/run.py || true
-RUN chmod +x /workspace/start.sh || true
+
 
 EXPOSE 8000 8888
 CMD ["bash", "start.sh"]
