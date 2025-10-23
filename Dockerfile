@@ -27,8 +27,6 @@ RUN curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
  && ln -sf /usr/bin/python3.11 /usr/local/bin/python \
  && rm -f /tmp/get-pip.py
 
-# Optional: Wenn du trotzdem explizit sicherstellen willst:
-# RUN [ -e /usr/local/bin/pip3 ] || ln -s /usr/local/bin/pip /usr/local/bin/pip3
 
 
 
