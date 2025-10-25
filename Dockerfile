@@ -27,6 +27,12 @@ RUN curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
  && ln -sf /usr/bin/python3.11 /usr/local/bin/python \
  && rm -f /tmp/get-pip.py
 
+# 🔁 Dateien kopieren
+COPY . .
+COPY start.sh /workspace/start.sh
+
+# ✅ Rechte setzen
+RUN chmod +x /workspace/start.sh
 
 
 
