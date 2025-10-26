@@ -18,12 +18,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # --- pip für Python 3.11 ------------------------------------------------------
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
 
-# --- Torch (CUDA 12.1) zuerst, damit flash_attn notfalls import-checks besteht --
+# --- Torch (CUDA 12.1) zuerst ------------------------------------------------
 RUN python3.11 -m pip install --upgrade pip setuptools wheel packaging && \
     python3.11 -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 \
       torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0
 
-# --- flash-attn nur als fertiges Wheel (kein Source-Build, sonst Platz-/Build-Probleme) ---
+# --- flash-attn nur als fertiges Wheel (kein Source-Build). Mehrere Versionen probieren. ---
+RUN (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.8.1) \
+ || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.7.4) \
+ || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.6.3) \
+ || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.6.1) \
+ || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.5.9) \
+ || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.5.8) \
+ || echo "⚠️  Kein kompatibles flash-attn Wheel gefunden – überspringe."
 # Falls für diese Kombi kein Wheel existiert, wird es übersprungen.
 RUN python3.11 -m pip install --no-cache-dir --only-binary=:all: \
       "flash-attn>=2.6,<2.9" \
