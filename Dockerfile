@@ -16,15 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dpkg-reconfigure -f noninteractive tzdata && git lfs install && \
     rm -rf /var/lib/apt/lists/*
 
-# 2) pip für Py3.11
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 && \
-    ln -sf /usr/bin/python3.11 /usr/bin/python && \
-    ln -sf /usr/local/bin/pip /usr/bin/pip && \
-    pip install --upgrade pip setuptools wheel packaging
 
-# 3) Torch (cu121) separat (bleibt gecached)
-RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 \
-    torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0
 
 
 
