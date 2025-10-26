@@ -18,6 +18,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 
 
+# Nach apt-Installation von python3.11 …
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
+ && /usr/bin/python3.11 /tmp/get-pip.py \
+ && rm -f /tmp/get-pip.py
+
+# Optional, wenn du "pip" Kommandos (ohne python -m) benutzen willst:
+RUN ln -sf /usr/local/bin/pip /usr/bin/pip \
+ && ln -sf /usr/bin/python3.11 /usr/bin/python
 
 
 
