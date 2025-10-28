@@ -1,54 +1,41 @@
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+# Cleanes RunPod-Base mit CUDA/Torch/Py3.11 vorinstalliert
+FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
 
+# Basics & HF-Caches (nur Orte, kein zusätzliches Python/Torch)
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1 \
     PYTHONUNBUFFERED=1 \
-    TZ=Europe/Berlin
+    TZ=Europe/Berlin \
+    HF_HOME=/workspace/.cache/hf \
+    TRANSFORMERS_CACHE=/workspace/.cache/hf/transformers \
+    HF_HUB_CACHE=/workspace/.cache/hf/hub
 
-# --- System & Python 3.11 ----------------------------------------------------
+WORKDIR /workspace
+
+# Nur kleine Tools; KEIN Python/Torch-Reinstall!
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common gnupg ca-certificates curl wget unzip tzdata \
-    python3.11 python3.11-venv python3.11-dev \
-    git git-lfs ffmpeg libsndfile1 libsentencepiece-dev \
-    rclone fuse nano tmux aria2 \
+    git git-lfs ffmpeg libsndfile1 libsentencepiece-dev curl wget jq tzdata \
  && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime \
  && dpkg-reconfigure -f noninteractive tzdata \
+ && git lfs install --system \
+ && mkdir -p "$HF_HOME" "$TRANSFORMERS_CACHE" "$HF_HUB_CACHE" \
  && rm -rf /var/lib/apt/lists/*
 
-# --- pip für Python 3.11 ------------------------------------------------------
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+# (Optional) Performance-Extras – NUR wenn du sie im Image haben willst.
+# Ansonsten machst du das in start.sh.
+# RUN python -m pip install --upgrade pip setuptools wheel && \
+#     python -m pip install "xformers==0.0.27.post2" && \
+#     python -m pip install "flash-attn>=2.6.0" --no-build-isolation
 
-# --- Torch (CUDA 12.1) zuerst ------------------------------------------------
-RUN python3.11 -m pip install --upgrade pip setuptools wheel packaging && \
-    python3.11 -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 \
-      torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0
 
-# --- flash-attn nur als fertiges Wheel (kein Source-Build). Mehrere Versionen probieren. ---
-RUN (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.8.1) \
- || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.7.4) \
- || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.6.3) \
- || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.6.1) \
- || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.5.9) \
- || (python3.11 -m pip install --no-cache-dir --only-binary=:all: flash-attn==2.5.8) \
- || echo "⚠️  Kein kompatibles flash-attn Wheel gefunden – überspringe."
-# Falls für diese Kombi kein Wheel existiert, wird es übersprungen.
-RUN python3.11 -m pip install --no-cache-dir --only-binary=:all: \
-      "flash-attn>=2.6,<2.9" \
- || echo "⚠️  Kein flash-attn Wheel für diese Umgebung gefunden – überspringe."
-
-# --- Python-Deps der App ------------------------------------------------------
-# WICHTIG: requirements.txt darf KEIN torch/vision/audio/flash_attn enthalten.
+# 📦 Restliche Python-Deps
+# 4) Rest über requirements.txt (einmal!)
 COPY requirements.txt /tmp/requirements.txt
-RUN python3.11 -m pip install --no-cache-dir --prefer-binary -r /tmp/requirements.txt && \
-    python3.11 -m pip install --no-cache-dir jupyterlab uvicorn fastapi
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# --- HuggingFace Caches (optional) -------------------------------------------
-ENV HF_HOME=/workspace/.cache/huggingface \
-    TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers \
-    HF_HUB_CACHE=/workspace/.cache/huggingface/hub
 
-# --- App ---------------------------------------------------------------------
-WORKDIR /workspace
+
+# Nichts weiter – start.sh kümmert sich um Clone, Modelle, Jupyter etc.
 COPY . .
 RUN chmod +x /workspace/start.sh
 
