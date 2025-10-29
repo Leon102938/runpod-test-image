@@ -1,62 +1,28 @@
-# -------- Core / Utilities (kompatibel mit PyTorch 2.4, Py3.11) ------------
+# ===== Core (kein torch hier!) =====
 numpy<2
 tqdm
-easydict
+easydict==1.10
+einops
 ftfy
 safetensors>=0.4.3
-opencv-python>=4.9.0.80
+opencv-python-headless>=4.9.0.80
 imageio[ffmpeg]
 imageio-ffmpeg
-protobuf
-einops
+protobuf<5
 networkx
 python-dotenv
+sentencepiece>=0.2.0
 
-# -------- Hugging Face / Diffusers-Stack (WAN-kompatibel) -------------------
-# wichtig: FromOriginalModelMixin ist ab diesen Versionen vorhanden
+# ===== HF / Diffusers-Stack (WAN 2.2 kompatibel, inkl. FromOriginalModelMixin) =====
 diffusers==0.31.0
 transformers==4.51.0
 tokenizers==0.20.1
 accelerate==1.1.1
 huggingface_hub>=0.24.5
-sentencepiece>=0.2.0
-safetensors>=0.4.3
 
-# -------- Medien / Audio (falls du S2V/Audio nutzt) -------------------------
-librosa==0.10.2.post1
-soundfile==0.12.1
-moviepy==1.0.3
-
-# -------- CLIP / OpenCLIP (einige Pipelines/Prompts benötigen das) ----------
-open-clip-torch==2.24.0
-git+https://github.com/openai/CLIP.git
-
-# -------- WAN 2.2 spezifische/übliche Deps ---------------------------------
-easydict==1.10
-
-# -------- Optional: Training/Experimente (ungefährlich, keine Kern-Pins) ----
-omegaconf
-lightning
-prefigure==0.0.4
-alias-free-torch==0.0.6
-vector-quantize-pytorch==1.14.24
-
-# -------- Extras für S2V / Animate / SAM / k-diffusion ----------------------
-decord
-peft
-onnxruntime
-pandas
-matplotlib
-loguru
-# SAM2 als Editable Install (Commit fixiert; stabil für Build-Repro)
--e git+https://github.com/facebookresearch/sam2.git@0e78a118995e66bb27d78518c4bd9a3e95b4e266#egg=SAM-2
-git+https://github.com/crowsonkb/k-diffusion.git@master
-
-# -------- API / Server / Dev (für deinen HTTP-Layer & Notebooks) ------------
-fastapi
-uvicorn
-jupyterlab
-pydantic
-
-# -------- Optional (WAN nutzt es teils): Alibaba DashScope -------------------
-dashscope
+# ===== Dev / Server (Jupyter + HTTP-API) =====
+fastapi>=0.112
+uvicorn[standard]>=0.30
+pydantic>=2.7,<3
+jupyterlab>=4.2,<5
+ipykernel>=6.29
