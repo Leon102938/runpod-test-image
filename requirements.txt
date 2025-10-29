@@ -1,59 +1,62 @@
-# --- Core (kein torch hier!) ---
-numpy==1.26.4
-pandas==2.2.2
-scipy==1.11.4
-pillow==10.3.0
+# -------- Core / Utilities (kompatibel mit PyTorch 2.4, Py3.11) ------------
+numpy<2
 tqdm
+easydict
+ftfy
+safetensors>=0.4.3
+opencv-python>=4.9.0.80
+imageio[ffmpeg]
+imageio-ffmpeg
+protobuf
+einops
+networkx
+python-dotenv
 
-# HF-Stack
-transformers==4.43.4
-tokenizers==0.19.1
-accelerate==0.32.1
-diffusers==0.16.1
-safetensors==0.4.3
-huggingface_hub==0.24.5
-sentencepiece==0.2.0
+# -------- Hugging Face / Diffusers-Stack (WAN-kompatibel) -------------------
+# wichtig: FromOriginalModelMixin ist ab diesen Versionen vorhanden
+diffusers==0.31.0
+transformers==4.51.0
+tokenizers==0.20.1
+accelerate==1.1.1
+huggingface_hub>=0.24.5
+sentencepiece>=0.2.0
+safetensors>=0.4.3
 
-# Audio / Media
+# -------- Medien / Audio (falls du S2V/Audio nutzt) -------------------------
 librosa==0.10.2.post1
 soundfile==0.12.1
 moviepy==1.0.3
-imageio==2.34.1
-imageio-ffmpeg==0.4.9
 
-# CLIP / open-clip
+# -------- CLIP / OpenCLIP (einige Pipelines/Prompts benötigen das) ----------
 open-clip-torch==2.24.0
-ftfy==6.1.1
+git+https://github.com/openai/CLIP.git
 
-# WAN 2.2
+# -------- WAN 2.2 spezifische/übliche Deps ---------------------------------
 easydict==1.10
-opencv-python-headless==4.9.0.80
 
-# ThinkSound / Training
+# -------- Optional: Training/Experimente (ungefährlich, keine Kern-Pins) ----
 omegaconf
 lightning
 prefigure==0.0.4
-alias-free-torch==0.0.6     # oder auskommentieren, falls nicht gebraucht
+alias-free-torch==0.0.6
 vector-quantize-pytorch==1.14.24
-networkx==3.2.1
-einops
-protobuf
-python-dotenv
 
-# API / Server / Dev
+# -------- Extras für S2V / Animate / SAM / k-diffusion ----------------------
+decord
+peft
+onnxruntime
+pandas
+matplotlib
+loguru
+# SAM2 als Editable Install (Commit fixiert; stabil für Build-Repro)
+-e git+https://github.com/facebookresearch/sam2.git@0e78a118995e66bb27d78518c4bd9a3e95b4e266#egg=SAM-2
+git+https://github.com/crowsonkb/k-diffusion.git@master
+
+# -------- API / Server / Dev (für deinen HTTP-Layer & Notebooks) ------------
 fastapi
 uvicorn
 jupyterlab
 pydantic
 
-
-# ───── Neu und Nötig (wan)─────
+# -------- Optional (WAN nutzt es teils): Alibaba DashScope -------------------
 dashscope
-modelscope
-
-
-
-# Git-Repos direkt installieren
-git+https://github.com/descriptinc/descript-audio-codec.git@main
-git+https://github.com/crowsonkb/k-diffusion.git@master
-git+https://github.com/openai/CLIP.git
