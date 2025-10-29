@@ -38,7 +38,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 # Beispiel: im Repo liegen sie unter /workspace/Wan2.2/
 COPY Wan2.2/requirements.txt           /tmp/wan/requirements.txt
 COPY Wan2.2/requirements_s2v.txt       /tmp/wan/requirements_s2v.txt
-COPY Wan2.2/requirements_anim.txt      /tmp/wan/requirements_anim.txt
+COPY Wan2.2/requirements_animate.txt      /tmp/wan/requirements_anim.txt
 
 
 
