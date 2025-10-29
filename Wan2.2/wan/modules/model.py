@@ -150,11 +150,7 @@ class WanSelfAttention(nn.Module):
             window_size=self.window_size)
 
         # output
-        if x is not None:
-            x = x.flatten(2)
-        else:
-            raise ValueError("Flash attention (WanSelfAttention) returned None. Check input shapes or flash_attention function.")
-
+        x = x.flatten(2)
         x = self.o(x)
         return x
 
@@ -179,11 +175,7 @@ class WanCrossAttention(WanSelfAttention):
         x = flash_attention(q, k, v, k_lens=context_lens)
 
         # output
-        if x is not None:
-            x = x.flatten(2)
-        else:
-            raise ValueError("Flash attention (WanCrossAttention) returned None. Check input shapes or flash_attention function.")
-
+        x = x.flatten(2)
         x = self.o(x)
         return x
 
@@ -314,7 +306,7 @@ class WanModel(ModelMixin, ConfigMixin):
                  model_type='t2v',
                  patch_size=(1, 2, 2),
                  text_len=512,
-                 in_dim=48,
+                 in_dim=16,
                  dim=2048,
                  ffn_dim=8192,
                  freq_dim=256,
@@ -326,21 +318,6 @@ class WanModel(ModelMixin, ConfigMixin):
                  qk_norm=True,
                  cross_attn_norm=True,
                  eps=1e-6):
-        
-        super().__init__()  # ← GANZ OBEN IN __init__()
-
-        
-        self.patch_embedding = nn.Conv3d(
-    in_channels=48,
-    out_channels=2048,
-    kernel_size=(1, 2, 2),
-    stride=(1, 2, 2),
-    padding=(0, 0, 0)
-)
-
-
-
-        
         r"""
         Initialize the diffusion model backbone.
 
@@ -379,7 +356,7 @@ class WanModel(ModelMixin, ConfigMixin):
 
         super().__init__()
 
-        assert model_type in ['t2v', 'i2v', 'ti2v']
+        assert model_type in ['t2v', 'i2v', 'ti2v', 's2v']
         self.model_type = model_type
 
         self.patch_size = patch_size
@@ -471,7 +448,6 @@ class WanModel(ModelMixin, ConfigMixin):
         x = [self.patch_embedding(u.unsqueeze(0)) for u in x]
         grid_sizes = torch.stack(
             [torch.tensor(u.shape[2:], dtype=torch.long) for u in x])
-        print("🔥 Shape vor patch_embedding:", [u.shape for u in x])
         x = [u.flatten(2).transpose(1, 2) for u in x]
         seq_lens = torch.tensor([u.size(1) for u in x], dtype=torch.long)
         assert seq_lens.max() <= seq_len
