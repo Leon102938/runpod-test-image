@@ -12,6 +12,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /workspace
 
+
+
+
 # Nur kleine Tools; KEIN Python/Torch-Reinstall!
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git git-lfs ffmpeg libsndfile1 libsentencepiece-dev curl wget jq tzdata \
@@ -34,7 +37,11 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 
-
+# 3) Flash-Attention passend zu Torch/CUDA 12.4
+RUN python -m pip install --upgrade pip setuptools wheel && \
+    pip install --no-build-isolation "flash-attn==2.8.3"
+# Optional: xformers nur wenn du es brauchst (WAN 2.2 braucht es nicht zwingend)
+# RUN pip install "xformers==0.0.27.post2"
 
 
 # Nichts weiter – start.sh kümmert sich um Clone, Modelle, Jupyter etc.
