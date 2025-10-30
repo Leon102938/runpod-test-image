@@ -38,6 +38,11 @@ RUN set -eux; \
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+COPY requirements_heavy.txt /tmp/requirements_heavy.txt
+RUN set -eux; mkdir -p /workspace/.tmp && export TMPDIR=/workspace/.tmp; \
+     pip install --no-cache-dir -r /tmp/requirements_heavy.txt; \
+     rm -rf /workspace/.tmp /root/.cache ~/.cache /tmp/*
+
 
 
 # Nichts weiter – start.sh kümmert sich um Clone, Modelle, Jupyter etc.

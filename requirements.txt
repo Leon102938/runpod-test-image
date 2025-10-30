@@ -28,8 +28,3 @@ jupyterlab>=4.2,<5
 ipykernel>=6.29
 
 
-# ===== Restliche für Wan2.2 =====
-decord
-librosa
-peft
-dashscope
