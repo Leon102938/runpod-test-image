@@ -43,11 +43,15 @@ RUN set -eux; mkdir -p /workspace/.tmp && export TMPDIR=/workspace/.tmp; \
      pip install --no-cache-dir -r /tmp/requirements_heavy.txt; \
      rm -rf /workspace/.tmp /root/.cache ~/.cache /tmp/*
 
+# HF CLI + Turbo-Downloader
+RUN pip install --no-cache-dir "huggingface_hub[cli]" hf_transfer
+
 
 
 # Nichts weiter – start.sh kümmert sich um Clone, Modelle, Jupyter etc.
 COPY . .
 RUN chmod +x /workspace/start.sh
+RUN chmod +x /workspace/init.sh
 
 EXPOSE 8888 8000
 CMD ["/bin/bash","-lc","/workspace/start.sh"]

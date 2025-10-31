@@ -49,6 +49,19 @@ if [ "$FASTAPI" == "on" ]; then
   nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > /workspace/fastapi.log 2>&1 &
 fi
 
+
+# ============ 🔷 Download ============
+if [ "$Init" = "on" ]; then
+  echo "🚀 Starte WAN-Init"
+  if [ -x /workspace/init.sh ]; then
+    nohup bash /workspace/init.sh >/dev/null 2>&1 & disown
+  else
+    echo "⚠️  /workspace/init.sh nicht gefunden oder nicht ausführbar."
+  fi
+else
+  echo "⏭️  Init=off – überspringe WAN-Download."
+fi
+
 # ============ ✅ ABSCHLUSS ============
 echo "✅ Dienste wurden gestartet: Modelle geladen, JupyterLab und/oder FastAPI aktiv (je nach config)"
 tail -f /dev/null
