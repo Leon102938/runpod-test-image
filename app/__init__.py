@@ -1,1 +1,2 @@
-# Damit Python das Verzeichnis als Modul erkennt
+# /workspace/app/__init__.py
+# Markiert das Verzeichnis als Python-Paket.
