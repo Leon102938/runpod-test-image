@@ -1,5 +1,14 @@
 #!/bin/bash
 
+set -euo pipefail
+
+# ============ 🔧 Anti-Fragmentation für PyTorch ============
+# Stabil & ohne den buggy expandable_segments
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-max_split_size_mb:256}"
+
+# (optional für Login-Shells)
+echo 'export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:256' > /etc/profile.d/pytorch_alloc.sh
+
 # Tools-Konfiguration laden
 source ./tools.config
 
@@ -19,9 +28,10 @@ else
 fi
 
 
-
 # ============ 🔧 PYTHONPATH ============
 export PYTHONPATH="$PYTHONPATH:/workspace/app"
+
+
 
 # ============ 🔷 JUPYTERLAB THEME ============
 mkdir -p /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension
@@ -65,5 +75,3 @@ fi
 # ============ ✅ ABSCHLUSS ============
 echo "✅ Dienste wurden gestartet: Modelle geladen, JupyterLab und/oder FastAPI aktiv (je nach config)"
 tail -f /dev/null
-
-
