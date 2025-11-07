@@ -17,9 +17,9 @@ WORKDIR /workspace
 
 # Nur kleine Tools; KEIN Python/Torch-Reinstall!
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git git-lfs ffmpeg libsndfile1 libsentencepiece-dev curl wget jq tzdata \
+    git git-lfs ffmpeg libsndfile1 libsentencepiece-dev curl wget jq tzdata uuid-runtime \
  && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime \
- && dpkg-reconfigure -f noninteractive tzdata uuid-runtime \
+ && dpkg-reconfigure -f noninteractive tzdata \
  && git lfs install --system \
  && mkdir -p "$HF_HOME" "$TRANSFORMERS_CACHE" "$HF_HUB_CACHE" \
  && rm -rf /var/lib/apt/lists/*
