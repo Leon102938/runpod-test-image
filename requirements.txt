@@ -11,7 +11,7 @@ imageio-ffmpeg
 protobuf==3.19.6
 networkx
 python-dotenv
-sentencepiece>=0.2.99
+sentencepiece>=0.1.99
 
 # ===== HF / Diffusers-Stack (WAN 2.2 kompatibel, inkl. FromOriginalModelMixin) =====
 diffusers==0.31.0
