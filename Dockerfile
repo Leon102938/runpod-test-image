@@ -19,7 +19,7 @@ WORKDIR /workspace
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git git-lfs ffmpeg libsndfile1 libsentencepiece-dev curl wget jq tzdata \
  && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime \
- && dpkg-reconfigure -f noninteractive tzdata \
+ && dpkg-reconfigure -f noninteractive tzdata uuid-runtime \
  && git lfs install --system \
  && mkdir -p "$HF_HOME" "$TRANSFORMERS_CACHE" "$HF_HUB_CACHE" \
  && rm -rf /var/lib/apt/lists/*
