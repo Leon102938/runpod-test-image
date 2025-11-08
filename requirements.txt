@@ -15,8 +15,8 @@ sentencepiece>=0.1.99
 
 # ===== HF / Diffusers-Stack (WAN 2.2 kompatibel, inkl. FromOriginalModelMixin) =====
 diffusers==0.31.0
-transformers==4.51.0
-tokenizers==0.21.0
+transformers==4.43.3
+tokenizers==0.19.1
 accelerate==1.1.1
 huggingface_hub>=0.30.1
 

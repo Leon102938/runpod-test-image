@@ -52,6 +52,7 @@ RUN pip install --no-cache-dir "huggingface_hub[cli]" hf_transfer
 COPY . .
 RUN chmod +x /workspace/start.sh
 RUN chmod +x /workspace/init.sh
+RUN chmod +x /workspace/ThinkSound/scripts/demo.sh
 
 EXPOSE 8888 8000
 CMD ["/bin/bash","-lc","/workspace/start.sh"]
