@@ -9,6 +9,11 @@ from .wan_api import (
     WAN_ROOT, WAN_CKPT
 )
 
+
+from .thinksound_api import (
+    TSRequest, run_thinksound, submit_ts_job, get_ts_status, get_ts_result
+)
+
 app = FastAPI(title="WAN 2.2 API", version="1.1")
 
 @app.get("/health")
@@ -33,4 +38,23 @@ def wan_status(job_id: str):
 @app.get("/wan/result/{job_id}")
 def wan_result(job_id: str):
     return get_result(job_id)
+
+@app.post("/thinksound/generate")
+def ts_generate(request: TSRequest):
+    return run_thinksound(request)
+
+@app.post("/thinksound/submit")
+def ts_submit(request: TSRequest):
+    job_id = submit_ts_job(request)
+    return {"ok": True, "job_id": job_id}
+
+@app.get("/thinksound/status/{job_id}")
+def ts_status(job_id: str):
+    return get_ts_status(job_id)
+
+@app.get("/thinksound/result/{job_id}")
+def ts_result(job_id: str):
+    return get_ts_result(job_id)
+
+
 

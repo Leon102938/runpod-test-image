@@ -18,4 +18,22 @@ fi
 
 
 
+# ThinkSound – exakt dein DW
+if [ "${ThinkSound}" = "on" ]; then
+  echo "🎧 Lade ThinkSound (ckpts) ..."
+  mkdir -p /workspace/ThinkSound/ckpts
+  python - <<'PY'
+from huggingface_hub import snapshot_download
+snapshot_download(
+    repo_id="liuhuadai/ThinkSound",
+    repo_type="model",
+    local_dir="/workspace/ThinkSound/ckpts",
+    local_dir_use_symlinks=False,
+    resume_download=True,
+)
+print("OK")
+PY
+  echo "✅ ThinkSound fertig."
+fi
 
+echo "🏁 init done."

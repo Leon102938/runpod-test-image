@@ -61,14 +61,14 @@ fi
 
 # ============ 🔷 Download/Init (WAN) ============
 if [ "${Init:-off}" = "on" ]; then
-  echo "🚀 Starte WAN-Init"
+  echo "🚀 Starte WAN/Think-Init"
   if [ -x /workspace/init.sh ]; then
     nohup bash /workspace/init.sh >/dev/null 2>&1 & disown
   else
     echo "⚠️  /workspace/init.sh nicht gefunden oder nicht ausführbar."
   fi
 else
-  echo "⏭️  Init=off – überspringe WAN-Download."
+  echo "⏭️  Init=off – überspringe WAN/Think-Download."
 fi
 
 # ============ ✅ ABSCHLUSS ============
