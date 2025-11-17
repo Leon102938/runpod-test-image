@@ -152,12 +152,12 @@ def main():
     audio_dir = os.path.join(args.save_dir, f'{formatted_date}_batch_size{args.test_batch_size}')
     os.makedirs(audio_dir, exist_ok=True)
 
-    # Dateiname an sample_id koppeln (ENV), Standard "demo"
+    # sample_id aus ENV (von API), fallback "demo"
     sample_id = os.environ.get("TS_SAMPLE_ID") or "demo"
     audio_path = os.path.join(audio_dir, f"{sample_id}.wav")
     torchaudio.save(audio_path, audio[0], 44100)
 
-    # Auto-Muxing: Quelle aus ENV, sonst Fallback auf Demo-Video (falls vorhanden)
+    # Auto-Muxing: Quelle aus ENV, sonst Fallback auf demo.mp4
     src_video = os.environ.get("TS_SOURCE_VIDEO")
     if not src_video or not os.path.exists(src_video):
         candidate = "/workspace/ThinkSound/videos/demo.mp4"
@@ -166,7 +166,9 @@ def main():
 
     if src_video and os.path.exists(src_video):
         try:
-            out_mp4 = _mux_to_mp4(src_video, audio_path, os.path.join(audio_dir, f"{sample_id}.mp4"))
+            # MP4 immer als <sample_id>_aud.mp4 speichern
+            mp4_path = os.path.join(audio_dir, f"{sample_id}_aud.mp4")
+            out_mp4 = _mux_to_mp4(src_video, audio_path, mp4_path)
             print(f"🎬 Muxed video written: {out_mp4}")
         except Exception as e:
             print(f"⚠️ FFmpeg mux failed: {e}")

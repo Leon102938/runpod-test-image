@@ -1,5 +1,7 @@
 # /workspace/app/main.py
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, Request, HTTPException
+from fastapi.responses import FileResponse
+import os
 from .wan_api import (
     TI2VRequest,
     run_wan_ti2v,
@@ -9,10 +11,15 @@ from .wan_api import (
     WAN_ROOT, WAN_CKPT
 )
 
-
 from .thinksound_api import (
-    TSRequest, run_thinksound, submit_ts_job, get_ts_status, get_ts_result
+    TSRequest, run_thinksound, submit_ts_job, get_ts_status, get_ts_result, THINK_ROOT
 )
+
+
+
+# 🔗 Proxy-Basis-URL aus start.sh (BASE_URL)
+BASE_URL = os.getenv("BASE_URL", "").rstrip("/")
+
 
 app = FastAPI(title="WAN 2.2 API", version="1.1")
 
@@ -43,6 +50,19 @@ def wan_result(job_id: str):
 def ts_generate(request: TSRequest):
     return run_thinksound(request)
 
+@app.get("/thinksound/file/{file_path:path}", name="ts_file")
+def ts_file(file_path: str):
+    # Pfad sicher machen (keine ..-Kletterei)
+    safe_path = os.path.normpath(file_path).lstrip(os.sep)
+    full_path = os.path.join(THINK_ROOT, safe_path)
+
+    if not os.path.isfile(full_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # MP4 ausliefern (Browser zeigt Video / Download)
+    return FileResponse(full_path, media_type="video/mp4")
+
+
 @app.post("/thinksound/submit")
 def ts_submit(request: TSRequest):
     job_id = submit_ts_job(request)
@@ -53,8 +73,20 @@ def ts_status(job_id: str):
     return get_ts_status(job_id)
 
 @app.get("/thinksound/result/{job_id}")
-def ts_result(job_id: str):
-    return get_ts_result(job_id)
+def ts_result(job_id: str, request: Request):
+    res = get_ts_result(job_id)
+    audio_path = res.get("audio_path")
 
+    if audio_path:
+        if BASE_URL:
+            # Öffentlicher Proxy-Link wie bei WAN / fal.ai
+            res["audio_url"] = f"{BASE_URL}/thinksound/file/{audio_path}"
+        else:
+            # Fallback: interne URL, falls BASE_URL ausnahmsweise nicht gesetzt ist
+            res["audio_url"] = str(
+                request.url_for("ts_file", file_path=audio_path)
+            )
+
+    return res
 
 
