@@ -1,5 +1,6 @@
 # /workspace/app/main.py
 from fastapi import FastAPI, BackgroundTasks, Request, HTTPException
+from .editor_api import EditRequest, render_edit
 from fastapi.responses import FileResponse
 import os
 from .wan_api import (
@@ -90,3 +91,6 @@ def ts_result(job_id: str, request: Request):
     return res
 
 
+@app.post("/editor/render")
+def editor_render(request: EditRequest):
+    return render_edit(request)
