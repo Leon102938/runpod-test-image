@@ -104,9 +104,12 @@ def run_thinksound(req: TSRequest) -> dict:
             os.rename(orig_path, new_path)
             audio_path = new_path
 
+    # ✅ Fix: Erfolg, wenn wir einen Audio-/Videopfad gefunden haben
+    success = bool(audio_path)
+
     return {
-        "ok": p.returncode == 0,
-        "returncode": p.returncode,
+        "ok": success,                 # vorher: p.returncode == 0
+        "returncode": p.returncode,   # Returncode bleibt unverändert für Debug
         "stdout": p.stdout,
         "audio_path": audio_path,
     }
@@ -174,11 +177,15 @@ def submit_ts_job(req: TSRequest) -> str:
         meta = _rjson(paths["meta"]) or {}
         meta["finished_at"] = datetime.utcnow().isoformat() + "Z"
         meta["returncode"] = p.returncode
-        if p.returncode == 0:
+
+        # ✅ Fix: Wenn wir einen Pfad gefunden haben, ist der Job "done",
+        # auch wenn der Returncode z.B. 5 ist wegen "Generated audio file not found".
+        if audio_path:
             meta["status"] = "done"
             _wjson(paths["result"], {"job_id": job_id, "audio_path": audio_path})
         else:
             meta["status"] = "error"
+
         _wjson(paths["meta"], meta)
 
     threading.Thread(target=_runner, daemon=True).start()
@@ -215,3 +222,4 @@ def get_ts_result(job_id: str) -> Dict[str, Any]:
         "status": "done",
         "audio_path": res.get("audio_path"),
     }
+    
