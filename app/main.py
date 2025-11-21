@@ -24,6 +24,11 @@ BASE_URL = os.getenv("BASE_URL", "").rstrip("/")
 
 app = FastAPI(title="WAN 2.2 API", version="1.1")
 
+
+WAN_FLAG_FILE = "/workspace/status/wan2.2_ready"
+
+
+
 @app.get("/health")
 def health():
     return {"status":"ok","WAN_ROOT":WAN_ROOT,"WAN_CKPT_DIR":WAN_CKPT}
@@ -94,3 +99,13 @@ def ts_result(job_id: str, request: Request):
 @app.post("/editor/render")
 def editor_render(request: EditRequest):
     return render_edit(request)
+
+
+
+@app.get("/DW/ready")
+def dw_ready():
+    ready = os.path.exists(WAN_FLAG_FILE)
+    return {
+        "ready": ready,
+        "message": "Wan2.2 Download fertig." if ready else "Wan2.2 wird noch vorbereitet."
+    }

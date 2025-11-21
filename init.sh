@@ -1,8 +1,16 @@
 #!/bin/bash
 # super simple init: lädt nur Wan2.2 TI2V-5B nach /workspace/Wan2.2
 
+# Fehler im Script nicht ignorieren
+set -e
+
 # optional: Schalter aus tools.config (falls vorhanden)
 source ./tools.config 2>/dev/null || true
+
+WAN_FLAG_FILE="/workspace/status/wan2.2_ready"
+
+# Ordner für Status-Flag sicherstellen
+mkdir -p /workspace/status
 
 if [ "${Wan22}" = "on" ]; then
   echo "📹 Lade Wan2.2 TI2V-5B ..."
@@ -14,9 +22,10 @@ if [ "${Wan22}" = "on" ]; then
     --resume-download
 
   echo "✅ Wan2.2 Download fertig."
+  touch "$WAN_FLAG_FILE"
+else
+  echo "⏭️ Wan2.2 Download übersprungen (Wan22 != on)."
 fi
-
-
 
 # ThinkSound – exakt dein DW
 if [ "${ThinkSound}" = "on" ]; then
@@ -34,6 +43,8 @@ snapshot_download(
 print("OK")
 PY
   echo "✅ ThinkSound fertig."
+else
+  echo "⏭️ ThinkSound Download übersprungen (ThinkSound != on)."
 fi
 
 echo "🏁 init done."
