@@ -222,4 +222,3 @@ def get_ts_result(job_id: str) -> Dict[str, Any]:
         "status": "done",
         "audio_path": res.get("audio_path"),
     }
-    
