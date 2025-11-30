@@ -1,6 +1,8 @@
 # /workspace/app/main.py
 from fastapi import FastAPI, BackgroundTasks, Request, HTTPException
 from .editor_api import EditRequest, render_edit
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from fastapi.responses import FileResponse
 import os
 from .wan_api import (
@@ -23,6 +25,24 @@ BASE_URL = os.getenv("BASE_URL", "").rstrip("/")
 
 
 app = FastAPI(title="WAN 2.2 API", version="1.1")
+
+
+# Basis-Verzeichnis der App
+BASE_DIR = Path(__file__).resolve().parent.parent  # -> /workspace
+# Ordner, in dem FFmpeg die Videos speichert
+EXPORT_DIR = BASE_DIR / "exports"                 # -> /workspace/exports
+
+# Sicherstellen, dass der Ordner existiert
+EXPORT_DIR.mkdir(parents=True, exist_ok=True)
+
+# /exports/... als statisches Verzeichnis bereitstellen
+app.mount(
+    "/exports",
+    StaticFiles(directory=str(EXPORT_DIR), html=False),
+    name="exports",
+)
+
+
 
 
 WAN_FLAG_FILE = "/workspace/status/wan2.2_ready"
