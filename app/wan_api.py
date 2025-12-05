@@ -26,6 +26,7 @@ class TI2VRequest(BaseModel):
     offload_model: bool = True
     convert_model_dtype: bool = True
     ckpt_dir: Optional[str] = None
+    infer_frames: int = 10 
     task: Literal["ti2v-5B"] = "ti2v-5B"
 
 # ====== Hilfsfunktionen ======
@@ -68,6 +69,7 @@ def _build_cmd(req: TI2VRequest) -> list:
         "--sample_guide_scale", str(req.sample_guide_scale),
         "--offload_model", str(req.offload_model),
         "--convert_model_dtype",
+        "--infer_frames", str(req.infer_frames),
     ]
 
 # ====== Synchron (bestehend) ======
