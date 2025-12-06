@@ -57,11 +57,11 @@ def predict_step(diffusion, batch, diffusion_objective, device='cuda:0'):
 
         model = diffusion.model
         if diffusion_objective == "v":
-            fakes = sample(model, noise, 24, 0, **cond_inputs, cfg_scale=5, batch_cfg=True)
+            fakes = sample(model, noise, 40, 0, **cond_inputs, cfg_scale=6, batch_cfg=True)
         elif diffusion_objective == "rectified_flow":
             import time
             start_time = time.time()
-            fakes = sample_discrete_euler(model, noise, 24, **cond_inputs, cfg_scale=5, batch_cfg=True)
+            fakes = sample_discrete_euler(model, noise, 40, **cond_inputs, cfg_scale=6, batch_cfg=True)
             end_time = time.time()
             execution_time = end_time - start_time
             print(f"执行时间: {execution_time:.2f} 秒")
@@ -118,33 +118,56 @@ def main():
 
     duration=(float)(args.duration_sec)
     
+    # Dauerabhängige Sequenzlängen setzen
     model_config["sample_size"] = duration * model_config["sample_rate"]
-    model_config["model"]["diffusion"]["config"]["sync_seq_len"] = 24*int(duration)
-    model_config["model"]["diffusion"]["config"]["clip_seq_len"] = 8*int(duration)
-    model_config["model"]["diffusion"]["config"]["latent_seq_len"] = round(44100/64/32*duration)
+    model_config["model"]["diffusion"]["config"]["sync_seq_len"] = 24 * int(duration)
+    model_config["model"]["diffusion"]["config"]["clip_seq_len"] = 8 * int(duration)
+    model_config["model"]["diffusion"]["config"]["latent_seq_len"] = round(44100 / 64 / 32 * duration)
 
+    # Modell aus Config bauen
     model = create_model_from_config(model_config)
 
     if args.compile:
         model = torch.compile(model)
 
-    model.load_state_dict(torch.load(args.ckpt_dir))
+    # Diffusion-Checkpoint laden (unterstützt Lightning-Checkpoints & plain state_dict)
+    ckpt = torch.load(
+        args.ckpt_dir,
+        map_location="cuda" if torch.cuda.is_available() else "cpu",
+    )
 
-    load_vae_state = load_ckpt_state_dict(args.pretransform_ckpt_path, prefix='autoencoder.') 
+    print(f"[ThinkSound] Loading diffusion checkpoint from: {args.ckpt_dir}")
+
+
+    # Wenn es ein Lightning-Checkpoint ist, liegt das eigentliche state_dict hier drin
+    if "state_dict" in ckpt:
+        ckpt = ckpt["state_dict"]
+
+    # Gewichte laden (nicht super-strict, damit kleine Unterschiede toleriert werden)
+    model.load_state_dict(ckpt, strict=False)
+
+    # Pretransform-VAE laden
+    load_vae_state = load_ckpt_state_dict(
+        args.pretransform_ckpt_path,
+        prefix="autoencoder.",
+    )
     model.pretransform.load_state_dict(load_vae_state)
 
-    audio,meta=load(os.path.join(args.results_dir, "demo.npz") , duration)
-    
+    # Features + Meta laden
+    audio, meta = load(os.path.join(args.results_dir, "demo.npz"), duration)
+
     for k, v in meta.items():
         if isinstance(v, torch.Tensor):
-            meta[k] = v.to('cuda:0')
+            meta[k] = v.to("cuda:0")
 
+    # Vorwärtspass
     audio = predict_step(
-        model, 
-        batch=[audio,(meta,)],
-        diffusion_objective=model_config["model"]["diffusion"]["diffusion_objective"], 
-        device='cuda:0'
+        model,
+        batch=[audio, (meta,)],
+        diffusion_objective=model_config["model"]["diffusion"]["diffusion_objective"],
+        device="cuda:0",
     )
+
 
     current_date = datetime.now()
     formatted_date = current_date.strftime('%m%d')

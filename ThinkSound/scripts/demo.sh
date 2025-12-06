@@ -68,6 +68,8 @@ python predict.py \
     --model-config "$model_config" \
     --duration-sec "$DURATION_SEC" \
     --results-dir "results"\
+    --ckpt-dir "ckpts/thinksound.ckpt" \
+
 
 if [ $? -ne 0 ]; then
     echo "❌ Inference failed"
