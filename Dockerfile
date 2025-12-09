@@ -1,5 +1,5 @@
 # Cleanes RunPod-Base mit CUDA/Torch/Py3.11 vorinstalliert
-FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+FROM runpod/pytorch:2.6.0-py3.11-cuda12.4.1-devel-ubuntu22.04
 
 # Basics & HF-Caches (nur Orte, kein zusätzliches Python/Torch)
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -11,6 +11,15 @@ ENV DEBIAN_FRONTEND=noninteractive \
     HF_HUB_CACHE=/workspace/.cache/hf/hub
 
 WORKDIR /workspace
+
+
+
+# --- PyTorch-Stack fest auf 2.6.0 setzen + ThinkSound ---
+RUN pip install --no-cache-dir \
+    "torch==2.6.0" \
+    "torchvision==0.21.0" \
+    "torchaudio==2.6.0" \
+    "thinksound==0.0.19"
 
 
 
