@@ -33,13 +33,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && mkdir -p "$HF_HOME" "$TRANSFORMERS_CACHE" "$HF_HUB_CACHE" \
  && rm -rf /var/lib/apt/lists/*
 
-# Flash-Attention (passend zu Torch 2.4 + CUDA 12.4)
-RUN set -eux; \
-    mkdir -p /workspace/.tmp && export TMPDIR=/workspace/.tmp; \
-    python -m pip install --upgrade pip setuptools wheel; \
-    pip install --no-build-isolation --no-cache-dir "flash-attn==2.8.3"; \
-    rm -rf /workspace/.tmp /root/.cache ~/.cache /tmp/*
-
 
 
 # 📦 Restliche Python-Deps
