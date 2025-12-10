@@ -124,50 +124,59 @@ def main():
     model_config["model"]["diffusion"]["config"]["clip_seq_len"] = 8 * int(duration)
     model_config["model"]["diffusion"]["config"]["latent_seq_len"] = round(44100 / 64 / 32 * duration)
 
-    # Modell aus Config bauen
+
     model = create_model_from_config(model_config)
 
-    if args.compile:
-        model = torch.compile(model)
+    # --- Checkpoint laden ---
+    ckpt = torch.load(args.ckpt_dir, map_location="cpu")
 
-    # Diffusion-Checkpoint laden (unterstützt Lightning-Checkpoints & plain state_dict)
-    ckpt = torch.load(
-        args.ckpt_dir,
-        map_location="cuda" if torch.cuda.is_available() else "cpu",
-    )
-
-    print(f"[ThinkSound] Loading diffusion checkpoint from: {args.ckpt_dir}")
-
-
-    # Wenn es ein Lightning-Checkpoint ist, liegt das eigentliche state_dict hier drin
+    # Lightning-Style: eigentliche Gewichte liegen unter "state_dict"
     if "state_dict" in ckpt:
-        ckpt = ckpt["state_dict"]
+        raw_state = ckpt["state_dict"]
+    else:
+        raw_state = ckpt
 
-    # Gewichte laden (nicht super-strict, damit kleine Unterschiede toleriert werden)
-    model.load_state_dict(ckpt, strict=False)
+    filtered_state = {}
+    for k, v in raw_state.items():
+        # 1) großer Checkpoint: "diffusion.model...." -> "model...."
+        if k.startswith("diffusion.model."):
+            new_k = k[len("diffusion."):]   # "model.xxx"
+            filtered_state[new_k] = v
 
-    # Pretransform-VAE laden
-    load_vae_state = load_ckpt_state_dict(
-        args.pretransform_ckpt_path,
-        prefix="autoencoder.",
-    )
+        # 2) Fallback für kleinere / andere Checkpoints: "model...." bleibt
+        elif k.startswith("model."):
+            filtered_state[k] = v
+
+        # 3) ALLES ANDERE IGNORIEREN:
+        #    - diffusion.pretransform...
+        #    - optimizer, ema, lr_schedulers, loops, ...
+        else:
+            continue
+
+    missing, unexpected = model.load_state_dict(filtered_state, strict=False)
+    print(f"[ThinkSound] load_state_dict: {len(missing)} missing, {len(unexpected)} unexpected keys")
+    if missing:
+        print("  Missing:", missing[:10], "...")
+    if unexpected:
+        print("  Unexpected:", unexpected[:10], "...")
+
+
+    
+    load_vae_state = load_ckpt_state_dict(args.pretransform_ckpt_path, prefix='autoencoder.')
     model.pretransform.load_state_dict(load_vae_state)
 
-    # Features + Meta laden
-    audio, meta = load(os.path.join(args.results_dir, "demo.npz"), duration)
-
+    
+    audio,meta=load(os.path.join(args.results_dir, "demo.npz") , duration)
+    
     for k, v in meta.items():
         if isinstance(v, torch.Tensor):
-            meta[k] = v.to("cuda:0")
+            meta[k] = v.to('cuda:0')
 
-    # Vorwärtspass
-    audio = predict_step(
-        model,
-        batch=[audio, (meta,)],
-        diffusion_objective=model_config["model"]["diffusion"]["diffusion_objective"],
-        device="cuda:0",
+    audio=predict_step(model, 
+        batch=[audio,(meta,)],
+        diffusion_objective=model_config["model"]["diffusion"]["diffusion_objective"], 
+        device='cuda:0'
     )
-
 
     current_date = datetime.now()
     formatted_date = current_date.strftime('%m%d')
@@ -180,6 +189,10 @@ def main():
     audio_path = os.path.join(audio_dir, f"{sample_id}.wav")
     torchaudio.save(audio_path, audio[0], 44100)
 
+
+
+
+    
     # Auto-Muxing: Quelle aus ENV, sonst Fallback auf demo.mp4
     src_video = os.environ.get("TS_SOURCE_VIDEO")
     if not src_video or not os.path.exists(src_video):
